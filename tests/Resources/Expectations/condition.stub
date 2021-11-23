@@ -1,0 +1,20 @@
+<p>Fred</p>
+
+<p>Unknown</p>
+
+<p>$selfTrueValue was true</p>
+
+<p>$selfFalseValue was false</p>
+
+
+
+<p>hello hello</p>
+
+<p>1 == 1</p>
+
+<p>else 1 === '1'</p>
+
+<p>7 === 7</p>
+
+<p>single_quotes</p>
+

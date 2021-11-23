@@ -1,0 +1,24 @@
+<?php
+
+namespace App\Commands;
+
+use Myerscode\Acorn\Framework\Console\Command;
+
+class TestCommand extends Command
+{
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function configure()
+    {
+        $this
+            ->setName('test:command')
+            ->setDescription('This is the commands description');
+    }
+
+    public function handle(): void
+    {
+        //
+    }
+}

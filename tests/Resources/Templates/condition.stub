@@ -1,0 +1,50 @@
+<{ if( $trueValue ) }>
+    <p><{ $name }></p>
+<{ else }>
+    <p>Unknown</p>
+<{ endif }>
+
+<{ if( $falseValue ) }>
+    <p><{ $name }></p>
+<{ else }>
+    <p>Unknown</p>
+<{ endif }>
+
+<{ if( $selfTrueValue ) }>
+    <p>$selfTrueValue was true</p>
+<{ endif }>
+
+<{ if( $selfFalseValue ) }>
+    <p>Should not be seen</p>
+<{ else }>
+    <p>$selfFalseValue was false</p>
+<{ endif }>
+
+<{ if( $selfFalseValue ) }>
+    <p>Should not be seen</p>
+<{ endif }>
+
+<{ if( "hello" == "hello" ) }>
+    <p>hello hello</p>
+<{ endif }>
+
+<{ if( $a == $b ) }>
+    <p><{ $a }> == <{ $b }></p>
+<{ endif }>
+
+<{ if( $a === $c ) }>
+    <p>1 === '1'</p>
+<{ else }>
+    <p>else 1 === '1'</p>
+<{ endif }>
+
+<{ if( $d === $e ) }>
+    <p>7 === 7</p>
+<{ else }>
+    <p>else 7 === '7'</p>
+<{ endif }>
+
+<{ if( 'single_quotes' == 'single_quotes' ) }>
+    <p>single_quotes</p>
+<{ endif }>
+

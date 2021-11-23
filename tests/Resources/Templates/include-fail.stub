@@ -1,0 +1,3 @@
+<{ include partials.footer }>
+Hello World
+<{ include partials.footer }>

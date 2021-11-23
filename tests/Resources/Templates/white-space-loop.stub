@@ -1,0 +1,34 @@
+<ul class="row">
+    <{       foreach( $Users as $user )
+
+    }>
+        <li><{ $user }></li>
+    <{
+
+
+    endforeach
+
+
+    }>
+</ul>
+
+<ul class="row">
+    <{ foreach( $xyz as $letter ) }>
+        <li><{
+
+
+
+        $letter }></li>
+        <{ foreach( $abc as $letter ) }>
+            <li><{ $letter                 }></li>
+        <{ endforeach }>
+    <{ endforeach
+
+
+
+    }>
+</ul>
+
+<ul class="row">
+    <{        foreach( $Users as $user )       }> <li><{ $user            }></li> <{ endforeach              }>
+</ul>

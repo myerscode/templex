@@ -1,0 +1,24 @@
+<?php
+
+namespace App\Commands;
+
+use Myerscode\Acorn\Framework\Console\Command;
+
+class <{ $CommandClass }> extends Command
+{
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function configure()
+    {
+        $this
+            ->setName('<{ $CommandName }>')
+            ->setDescription('<{ $CommandDescription }>');
+    }
+
+    public function handle(): void
+    {
+        //
+    }
+}
