@@ -12,7 +12,7 @@ class StubTest extends TestCase
 
     public function testStubStoresProperties(): void
     {
-        $path = __DIR__.'/Resources/Templates/loop.stub';
+        $path = __DIR__ . '/Resources/Templates/loop.stub';
         $name = 'loop';
 
         $properties = new Stub($name, $path);
@@ -23,7 +23,7 @@ class StubTest extends TestCase
 
     public function testCanGetContent(): void
     {
-        $path = __DIR__.'/Resources/Templates/text-only.stub';
+        $path = __DIR__ . '/Resources/Templates/text-only.stub';
         $name = 'loop';
 
         $properties = new Stub($name, $path);
@@ -33,7 +33,7 @@ class StubTest extends TestCase
 
     public function testThrowsExceptionIfStubDoesNotExist(): void
     {
-        $path = __DIR__.'/Resources/Templates/not-a-stub.stub';
+        $path = __DIR__ . '/Resources/Templates/not-a-stub.stub';
         $name = 'not-a-stub';
 
         $properties = new Stub($name, $path);

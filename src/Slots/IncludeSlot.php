@@ -21,7 +21,8 @@ class IncludeSlot extends Slot
             '/i',
         ];
 
-        return (string) preg_replace_callback(implode($regex),
+        return (string) preg_replace_callback(
+            implode($regex),
             function (array $matches) use ($variables): string {
                 $include = $matches[1];
                 if ($this->engine->isTemplate($include)) {

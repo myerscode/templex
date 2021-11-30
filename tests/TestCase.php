@@ -17,11 +17,11 @@ class TestCase extends BaseTestCase
 
     public function templateContent(string $template): string
     {
-        return (new Utility(__DIR__ . '/Resources/Templates/' .$template))->content();
+        return (new Utility(__DIR__ . '/Resources/Templates/' . $template))->content();
     }
 
     public function expectedContent(string $template): string
     {
-        return (new Utility(__DIR__ . '/Resources/Expectations/' .$template))->content();
+        return (new Utility(__DIR__ . '/Resources/Expectations/' . $template))->content();
     }
 }

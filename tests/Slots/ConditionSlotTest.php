@@ -27,7 +27,6 @@ class ConditionSlotTest extends TestCase
         $result = $this->render->render('condition.stub', $data);
 
         $this->assertEquals($this->expectedContent('condition.stub'), $result);
-
     }
 
     public function testThrowsErrorOnUnmatchedComparisons()

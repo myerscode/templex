@@ -12,7 +12,7 @@ class PropertiesTest extends TestCase
     {
         $properties = new Properties(['Users' => ['Fred', 'Tor', 'Chris']]);
 
-        $this->assertEquals(['Fred', 'Tor', 'Chris'],  $properties->resolveValue(['variable' => 'Users']));
+        $this->assertEquals(['Fred', 'Tor', 'Chris'], $properties->resolveValue(['variable' => 'Users']));
     }
 
     public function testPropertiesThrowsExceptionIfNotFound(): void

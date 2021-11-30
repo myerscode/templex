@@ -64,9 +64,9 @@ class TemplexTest extends TestCase
 
     public function testClearTemplateCache()
     {
-        $this->assertTrue( count($this->render->templates()) > 0);
+        $this->assertTrue(count($this->render->templates()) > 0);
         $this->render->clearTemplateCache();
-        $this->assertTrue( count($this->render->templates()) === 0);
+        $this->assertTrue(count($this->render->templates()) === 0);
     }
 
     public function testSetsDefaultExtensions()

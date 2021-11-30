@@ -18,7 +18,6 @@ class LoopSlotTest extends TestCase
         $result = $this->render->render('loop.stub', $data);
 
         $this->assertEquals($this->expectedContent('loop.stub'), $result);
-
     }
 
     public function testWhiteSpaceThreshold(): void
@@ -32,6 +31,5 @@ class LoopSlotTest extends TestCase
         $result = $this->render->render('white-space-loop.stub', $data);
 
         $this->assertEquals($this->expectedContent('loop.stub'), $result);
-
     }
 }

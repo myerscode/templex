@@ -71,7 +71,8 @@ class LoopSlot extends Slot
             '/si',
         ];
 
-        return preg_replace_callback(implode($regexParts),
+        return preg_replace_callback(
+            implode($regexParts),
             function (array $matches) use ($variables): string {
                 $output = '';
                 foreach ($variables->resolveValue($matches) as $value) {

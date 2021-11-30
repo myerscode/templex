@@ -122,8 +122,8 @@ class ConditionSlot extends Slot
         $simpleComparisonRegex = [
             'self' => '/^\$(?<variable>\w+)\s?$/si',
             'comparison' =>
-                '/^((?<first_is_literal>[\"\'])|(?<first_is_variable>[\$])){1}(?<first_value>\w+)\k<first_is_literal>?'.
-                '(?:\s?)(?<operators>[=!><]+)(?:\s?)'.
+                '/^((?<first_is_literal>[\"\'])|(?<first_is_variable>[\$])){1}(?<first_value>\w+)\k<first_is_literal>?' .
+                '(?:\s?)(?<operators>[=!><]+)(?:\s?)' .
                 '((?<second_is_literal>[\"\'])|(?<second_is_variable>\$))?(?<second_value>\w+)\k<second_is_literal>?$/si',
         ];
 

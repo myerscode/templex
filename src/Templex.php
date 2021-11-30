@@ -75,7 +75,8 @@ class Templex
     {
         $fileService = new FileService($this->templateDirectory);
 
-        $templateList = array_map(fn(SplFileInfo $file) => new Stub($this->makeTemplateName($file->getRealPath()), $file->getRealPath()),
+        $templateList = array_map(
+            fn(SplFileInfo $file) => new Stub($this->makeTemplateName($file->getRealPath()), $file->getRealPath()),
             $fileService->files()
         );
 
@@ -111,7 +112,7 @@ class Templex
             return $this->cached[$template];
         }
 
-        $templateFile = $this->templateDirectory.$template;
+        $templateFile = $this->templateDirectory . $template;
 
         $templateName = $this->makeTemplateName($templateFile);
 
@@ -206,5 +207,4 @@ class Templex
     {
         return $this->templateExtensions;
     }
-
 }

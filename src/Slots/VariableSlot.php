@@ -11,9 +11,10 @@ class VariableSlot extends Slot
     {
         $placeHolderRegex = '\$(?<variable>\w+)?';
 
-        $regex = '/'.Templex::PLACEHOLDER_OPEN.'\s*'.$placeHolderRegex.'\s*'.Templex::PLACEHOLDER_CLOSE.'/i';
+        $regex = '/' . Templex::PLACEHOLDER_OPEN . '\s*' . $placeHolderRegex . '\s*' . Templex::PLACEHOLDER_CLOSE . '/i';
 
-        return (string) preg_replace_callback($regex,
+        return (string) preg_replace_callback(
+            $regex,
             function (array $matches) use ($variables): string {
                 return $variables->resolveValue($matches);
             },
