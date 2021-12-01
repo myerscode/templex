@@ -62,6 +62,14 @@ class TemplexTest extends TestCase
         $this->assertFalse($this->render->isTemplate('partials.error'));
     }
 
+    public function testTemplateNamesAreLowerCase()
+    {
+        $this->assertTrue($this->render->isTemplate('loop'));
+        $this->assertFalse($this->render->isTemplate('LOOP'));
+        $this->assertTrue($this->render->isTemplate('loop'));
+        $this->assertFalse($this->render->isTemplate('PARTIALS.HEADER'));
+    }
+
     public function testClearTemplateCache()
     {
         $this->assertTrue(count($this->render->templates()) > 0);

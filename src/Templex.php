@@ -152,6 +152,7 @@ class Templex
             ->replace($removeFromPath, '')
             ->trim(",. \t\n\r\0\x0B")
             ->replace(DIRECTORY_SEPARATOR, '.')
+            ->toLowercase()
             ->value();
     }
 
