@@ -4,24 +4,40 @@ namespace Tests;
 
 use Myerscode\Templex\Templex;
 use Myerscode\Utilities\Files\Utility;
+use Myerscode\Utilities\Strings\Utility as StringUtility;
 use PHPUnit\Framework\TestCase as BaseTestCase;
 
 class TestCase extends BaseTestCase
 {
     protected Templex $render;
 
+    public function text($text): StringUtility
+    {
+        return new StringUtility($text);
+    }
+
+    public function templateDirectory(): string
+    {
+        return (new StringUtility(__DIR__ . '/Resources/Templates/'))->replace(['/'], DIRECTORY_SEPARATOR)->value();
+    }
+
+    public function expectedContentDirectory(): string
+    {
+        return (new StringUtility(__DIR__ . '/Resources/Expectations/'))->replace(['/'], DIRECTORY_SEPARATOR)->value();
+    }
+
     public function setUp(): void
     {
-        $this->render = new Templex(__DIR__ . '/Resources/Templates/', '.stub');
+        $this->render = new Templex($this->templateDirectory(), '.stub');
     }
 
     public function templateContent(string $template): string
     {
-        return (new Utility(__DIR__ . '/Resources/Templates/' . $template))->content();
+        return (new Utility($this->templateDirectory() . $template))->content();
     }
 
     public function expectedContent(string $template): string
     {
-        return (new Utility(__DIR__ . '/Resources/Expectations/' . $template))->content();
+        return (new Utility($this->expectedContentDirectory() . $template))->content();
     }
 }
