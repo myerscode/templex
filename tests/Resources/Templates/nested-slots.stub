@@ -1,0 +1,17 @@
+<ul>
+    <{ foreach( $Users as $user ) }>
+        <li><{ $user }></li>
+    <{ endforeach }>
+</ul>
+
+<{ foreach( $Users as $user ) }>
+    <{ if( $user == "Fred" ) }>
+        <p>Hello, <{ $user }></p>
+    <{ else }>
+        <p><{ $user }> was not Fred</p>
+    <{ endif }>
+<{ endforeach }>
+
+<{ if( true ) }>
+    <p>This value was <{ $boolean }></p>
+<{ endif }>

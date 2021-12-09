@@ -3,9 +3,8 @@
 namespace Myerscode\Templex;
 
 use Myerscode\Templex\Exceptions\TemplateNotFoundException;
-use Myerscode\Templex\Slots\ConditionSlot;
+use Myerscode\Templex\Slots\ControlSlot;
 use Myerscode\Templex\Slots\IncludeSlot;
-use Myerscode\Templex\Slots\LoopSlot;
 use Myerscode\Templex\Slots\SlotInterface;
 use Myerscode\Templex\Slots\VariableSlot;
 use Myerscode\Utilities\Files\Utility as FileService;
@@ -20,8 +19,7 @@ class Templex
 
     protected array $defaultSlots = [
             IncludeSlot::class,
-            ConditionSlot::class,
-            LoopSlot::class,
+            ControlSlot::class,
             VariableSlot::class,
         ];
 
@@ -42,7 +40,7 @@ class Templex
 
     public function __construct(protected string $templateDirectory, string $templateExtensions = 'stub,template')
     {
-        $this->slots = $this->defaultSlots;
+        $this->setSlots($this->defaultSlots);
 
         $this->setTemplateExtensions($templateExtensions);
 
@@ -207,5 +205,15 @@ class Templex
     public function templateExtensions(): array
     {
         return $this->templateExtensions;
+    }
+
+    public function setSlots(array $slots): void
+    {
+        $this->slots = $slots;
+    }
+
+    public function addSlot(string $slots): void
+    {
+        $this->slots[] = $slots;
     }
 }

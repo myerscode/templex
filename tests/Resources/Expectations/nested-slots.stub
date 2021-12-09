@@ -1,0 +1,11 @@
+<ul>
+    <li>Fred</li>
+    <li>Chris</li>
+    <li>Tor</li>
+</ul>
+
+<p>Hello, Fred</p>
+<p>Chris was not Fred</p>
+<p>Tor was not Fred</p>
+
+<p>This value was true</p>
