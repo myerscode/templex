@@ -3,17 +3,14 @@
 namespace Myerscode\Templex;
 
 use Myerscode\Templex\Exceptions\TemplateNotFoundException;
+use Myerscode\Templex\Stub\AbstractStub;
+use Myerscode\Templex\Stub\StubInterface;
 
-class Stub
+class Stub extends AbstractStub implements StubInterface
 {
     public function __construct(protected string $name, protected string $path)
     {
         //
-    }
-
-    public function name(): string
-    {
-        return $this->name;
     }
 
     public function path(): string
