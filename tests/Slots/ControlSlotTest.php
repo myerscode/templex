@@ -61,4 +61,15 @@ class ControlSlotTest extends TestCase
         $this->assertEquals($this->expectedContent('loop.stub'), $result);
     }
 
+    public function testWhiteSpaceOfConditions(): void
+    {
+        $data = [
+            'trueValue' => true,
+            'falseValue' => false,
+        ];
+
+        $result = $this->render->render('white-space-condition', $data);
+
+        $this->assertEquals($this->expectedContent('white-space-condition.stub'), $result);
+    }
 }

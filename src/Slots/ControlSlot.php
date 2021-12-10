@@ -157,7 +157,8 @@ class ControlSlot extends Slot
             '/',
             Templex::PLACEHOLDER_OPEN,
             '\s*',
-            'if(?<index>' . $index . ')\(',
+            'if(?<index>' . $index . ')',
+            '\s*\(',
             '\s*',
             '(?<variable>.+?)', // select the contents of the brackets, but don't be greedy
             '\s*',

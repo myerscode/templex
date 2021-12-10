@@ -1,0 +1,10 @@
+
+<{ if ( $trueValue ) }>
+    Value was true
+<{ endif }>
+
+                <{ if ( $falseValue ) }>
+                    Value was true
+                <{ else }>
+                    Value was false
+                <{ endif }>
