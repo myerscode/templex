@@ -2,6 +2,7 @@
 
 namespace Tests;
 
+use Myerscode\Templex\RawFileStub;
 use Myerscode\Templex\Templex;
 use Myerscode\Utilities\Files\Utility;
 use Myerscode\Utilities\Strings\Utility as StringUtility;
@@ -14,6 +15,11 @@ class TestCase extends BaseTestCase
     public function text($text): StringUtility
     {
         return new StringUtility($text);
+    }
+
+    public function rawStub(string $text): RawFileStub
+    {
+        return new RawFileStub('raw', $text);
     }
 
     public function templateDirectory(): string

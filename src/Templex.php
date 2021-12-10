@@ -7,6 +7,7 @@ use Myerscode\Templex\Slots\ControlSlot;
 use Myerscode\Templex\Slots\IncludeSlot;
 use Myerscode\Templex\Slots\SlotInterface;
 use Myerscode\Templex\Slots\VariableSlot;
+use Myerscode\Templex\Stub\StubInterface;
 use Myerscode\Utilities\Files\Utility as FileService;
 use Myerscode\Utilities\Strings\Utility as StringService;
 use SplFileInfo;
@@ -31,7 +32,7 @@ class Templex
     protected array $slots = [];
 
     /**
-     * @var Stub[]
+     * @var StubInterface[]
      */
     protected array $cached = [];
 
@@ -100,7 +101,7 @@ class Templex
     /**
      * @throws TemplateNotFoundException
      */
-    public function getStub(string $template): Stub
+    public function getStub(string $template): StubInterface
     {
         if (isset($this->cached[$template]) && ($this->cached[$template] instanceof Stub)) {
             return $this->cached[$template];
@@ -166,7 +167,7 @@ class Templex
         return $this->compile($stub, $properties);
     }
 
-    public function compile(Stub $template, Properties $properties): string
+    public function compile(StubInterface $template, Properties $properties): string
     {
         return $this->process($template->content(), $properties);
     }
