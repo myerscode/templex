@@ -3,6 +3,7 @@
 namespace Tests\Slots;
 
 use Myerscode\Templex\Exceptions\UnmatchedComparisonException;
+use Myerscode\Templex\Properties;
 use Tests\TestCase;
 
 class ControlSlotTest extends TestCase
@@ -59,6 +60,20 @@ class ControlSlotTest extends TestCase
         $this->assertEquals($this->expectedContent('condition.stub'), $result);
     }
 
+    public function testHandlesSelfComparison(): void
+    {
+        $raw = '
+        <{ if ( $true ) }>
+            Value was true
+        <{ endif }>
+        ';
+
+        $expected = '
+        Value was true
+        ';
+        $result = $this->render->compile($this->rawStub($raw), new Properties(['true' => 'true']));
+        $this->assertEquals($expected, $result);
+    }
 
     public function testHandlesBoolComparision(): void {
         $raw = "
