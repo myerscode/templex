@@ -214,16 +214,27 @@ class ControlSlot extends Slot
             'self' => '/^\$(?<variable>\w+)\s?$/si',
             'boolean' => '/^(?<boolean>true|false)\s?$/si',
             'comparison' =>
-                '/^((?<first_is_literal>[\"\'])|(?<first_is_variable>[\$])){1}(?<first_value>\w+)\k<first_is_literal>?' .
-                '(?:\s?)(?<operators>[=!><]+)(?:\s?)' .
-                '((?<second_is_literal>[\"\'])|(?<second_is_variable>\$))?(?<second_value>\w+)\k<second_is_literal>?$/si',
+                '/^' .
+                '(' .
+                '((?<first_is_literal>[\"\'])(?<first_literal_value>[\w]+)(\k<first_is_literal>))|' .
+                '(((?<first_is_variable>[\$]){1}|(?<first_is_number>[\d]))' .
+                '(?<first_value>\w*))' .
+                ')' .
+                '((?:\s?)(?<operators>[=!><]+)(?:\s?))' .
+                '(' .
+                '((?<second_is_literal>[\"\'])(?<second_literal_value>[\w]+)(\k<second_is_literal>))|' .
+                '(((?<second_is_variable>[\$]){1}|(?<second_is_number>[\d]))' .
+                '(?<second_value>\w*))' .
+                ')' .
+                '$/si',
         ];
 
         foreach ($simpleComparisonRegex as $conditionType => $comparisonRegex) {
             if (preg_match($comparisonRegex, $condition, $matches, PREG_UNMATCHED_AS_NULL)) {
                 switch ($conditionType) {
                     case 'self':
-                        return boolval($variables->resolveValue(['variable' => $matches['variable']]));
+                        $value = $variables->resolveValue(['variable' => $matches['variable']]);
+                        return boolval((int)filter_var($value, FILTER_VALIDATE_BOOLEAN));
                     case 'boolean':
                         return boolval((int)filter_var($matches['boolean'], FILTER_VALIDATE_BOOLEAN));
                     case 'comparison':
@@ -240,25 +251,31 @@ class ControlSlot extends Slot
 
         $firstIsLiteral = isset($matches['first_is_literal']);
         $firstIsVar = isset($matches['first_is_variable']);
+        $firstIsNumber = isset($matches['first_is_number']);
 
         $secondIsLiteral = isset($matches['second_is_literal']);
         $secondIsVar = isset($matches['second_is_variable']);
+        $secondIsNumber = isset($matches['second_is_number']);
 
         $operation = $matches['operators'];
 
         if ($firstIsVar) {
             $firstValue = $variables->resolveValue(['variable' => $matches['first_value']]);
+        } elseif ($firstIsNumber) {
+            $firstValue = ($matches['first_is_number'] . $matches['first_value']) * 1;
         } else {
             if ($firstIsLiteral) {
-                $firstValue = $matches['first_value'];
+                $firstValue = $matches['first_literal_value'];
             }
         }
 
         if ($secondIsVar) {
             $secondValue = $variables->resolveValue(['variable' => $matches['second_value']]);
+        } elseif ($secondIsNumber) {
+            $secondValue = ($matches['second_is_number'] . $matches['second_value']) * 1;
         } else {
             if ($secondIsLiteral) {
-                $secondValue = $matches['second_value'];
+                $secondValue = $matches['second_literal_value'];
             }
         }
 
