@@ -29,6 +29,36 @@ class ControlSlotTest extends TestCase
         $this->assertEquals($this->expectedContent('condition.stub'), $result);
     }
 
+
+    public function testHandlesBoolComparision(): void {
+        $raw = "
+        <{ if( true ) }>
+            pass
+        <{ else }>
+            fail
+        <{ endif }>
+        ";
+
+        $expected = "
+        pass
+        ";
+        $result = $this->render->compile($this->rawStub($raw), new Properties([]));
+        $this->assertEquals($expected, $result);
+
+        $raw = "
+        <{ if( false ) }>
+            pass
+        <{ else }>
+            fail
+        <{ endif }>
+        ";
+
+        $expected = "
+        fail
+        ";
+        $result = $this->render->compile($this->rawStub($raw), new Properties([]));
+        $this->assertEquals($expected, $result);
+    }
     public function testThrowsErrorOnUnmatchedComparisons()
     {
         $this->expectException(UnmatchedComparisonException::class);

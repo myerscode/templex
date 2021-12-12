@@ -225,7 +225,7 @@ class ControlSlot extends Slot
                     case 'self':
                         return boolval($variables->resolveValue(['variable' => $matches['variable']]));
                     case 'boolean':
-                        return boolval($matches['boolean']);
+                        return boolval((int)filter_var($matches['boolean'], FILTER_VALIDATE_BOOLEAN));
                     case 'comparison':
                         return $this->resolveComparison($matches, $variables);
                 }
