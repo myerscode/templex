@@ -268,9 +268,10 @@ class ControlSlot extends Slot
             '!=' => $firstValue != $secondValue,
             '!==' => $firstValue !== $secondValue,
             '>' => $firstValue > $secondValue,
+            '<' => $firstValue < $secondValue,
             '>=' => $firstValue >= $secondValue,
             '<=' => $firstValue <= $secondValue,
-            default => throw new \Exception('Unknown comparison operator'),
+            default => throw new \Exception("Unknown comparison operator found $operation"),
         };
     }
 }

@@ -8,6 +8,36 @@ use Tests\TestCase;
 class ControlSlotTest extends TestCase
 {
 
+    public function operatorProvider()
+    {
+        return [
+            '== pass' => ['==', "'a'", "'a'", 'pass'],
+            '== pass 2' => ['==', "'abc'", "'abc'", 'pass'],
+            '== fail' => ['==', "'a'", "'b'", 'fail'],
+            '=== pass' => ['===', "'a'", "'a'", 'pass'],
+            '=== pass 2' => ['===', "'abc'", "'abc'", 'pass'],
+            '=== fail' => ['===', "'a'", "'b'", 'fail'] ,
+            '!= pass' => ['!=', "'a'", "'a'", 'fail'],
+            '!= pass 2' => ['!=', "'a'", "'b'", 'pass'],
+            '!= pass 3' => ['!=', '7', 49, 'pass'],
+            '!= pass 4' => ['!=', "'abc'", "'abc'", 'fail'],
+            '!= fail' => ['!==', "'a'", "'b'", 'pass'],
+            '!== pass' => ['!==', "'a'", "'a'", 'fail'],
+            '!== pass 2' => ['!==', "'abc'", "'abc'", 'fail'],
+            '!== fail' => ['!==', "'49'", 49, 'pass'] ,
+            '> pass' => ['>', 49, 7, 'pass'] ,
+            '> fail' => ['>', 7, 49, 'fail'] ,
+            '>= equal pass' => ['>=', 7, 7, 'pass'] ,
+            '>= pass' => ['>=', 49, 48, 'pass'] ,
+            '>= fail' => ['>=', 7, 48, 'fail'] ,
+            '< pass' => ['<', 7, 49, 'pass'] ,
+            '< fail' => ['<', 49, 7, 'fail'] ,
+            '<= pass' => ['<=', 7, 49, 'pass'] ,
+            '<= pass equal' => ['<=', 49, 49, 'pass'] ,
+            '<= fail' => ['<=', 49, 7, 'fail'] ,
+        ];
+    }
+
     public function testHandlesComparisons(): void
     {
         $data = [
@@ -59,6 +89,27 @@ class ControlSlotTest extends TestCase
         $result = $this->render->compile($this->rawStub($raw), new Properties([]));
         $this->assertEquals($expected, $result);
     }
+
+    /**
+     * @dataProvider operatorProvider
+     */
+    public function testHandlesComparisonOperators($operator, $firstValue, $secondValue, $outcome): void
+    {
+        $raw = "
+        <{ if( $firstValue $operator $secondValue ) }>
+            pass
+        <{ else }>
+            fail
+        <{ endif }>
+        ";
+
+        $expected = "
+        $outcome
+        ";
+        $result = $this->render->compile($this->rawStub($raw), new Properties([]));
+        $this->assertEquals($expected, $result);
+    }
+
     public function testThrowsErrorOnUnmatchedComparisons()
     {
         $this->expectException(UnmatchedComparisonException::class);
