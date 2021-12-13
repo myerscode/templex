@@ -3,11 +3,11 @@
 namespace Myerscode\Templex;
 
 use Myerscode\Templex\Exceptions\TemplateNotFoundException;
-use Myerscode\Templex\Slots\ConditionSlot;
+use Myerscode\Templex\Slots\ControlSlot;
 use Myerscode\Templex\Slots\IncludeSlot;
-use Myerscode\Templex\Slots\LoopSlot;
 use Myerscode\Templex\Slots\SlotInterface;
 use Myerscode\Templex\Slots\VariableSlot;
+use Myerscode\Templex\Stub\StubInterface;
 use Myerscode\Utilities\Files\Utility as FileService;
 use Myerscode\Utilities\Strings\Utility as StringService;
 use SplFileInfo;
@@ -20,8 +20,7 @@ class Templex
 
     protected array $defaultSlots = [
             IncludeSlot::class,
-            ConditionSlot::class,
-            LoopSlot::class,
+            ControlSlot::class,
             VariableSlot::class,
         ];
 
@@ -33,7 +32,7 @@ class Templex
     protected array $slots = [];
 
     /**
-     * @var Stub[]
+     * @var StubInterface[]
      */
     protected array $cached = [];
 
@@ -42,7 +41,7 @@ class Templex
 
     public function __construct(protected string $templateDirectory, string $templateExtensions = 'stub,template')
     {
-        $this->slots = $this->defaultSlots;
+        $this->setSlots($this->defaultSlots);
 
         $this->setTemplateExtensions($templateExtensions);
 
@@ -102,7 +101,7 @@ class Templex
     /**
      * @throws TemplateNotFoundException
      */
-    public function getStub(string $template): Stub
+    public function getStub(string $template): StubInterface
     {
         if (isset($this->cached[$template]) && ($this->cached[$template] instanceof Stub)) {
             return $this->cached[$template];
@@ -145,10 +144,15 @@ class Templex
     {
         $removeFromPath = [
             $this->templateDirectory,
-            ...$this->templateExtensions,
         ];
 
-        return (new StringService($templatePath))
+        $name = new StringService($templatePath);
+
+        foreach ($this->templateExtensions() as $extension) {
+            $name = $name->removeFromEnd($extension);
+        }
+
+        return $name
             ->replace($removeFromPath, '')
             ->trim(",. \t\n\r\0\x0B")
             ->replace(DIRECTORY_SEPARATOR, '.')
@@ -168,7 +172,7 @@ class Templex
         return $this->compile($stub, $properties);
     }
 
-    public function compile(Stub $template, Properties $properties): string
+    public function compile(StubInterface $template, Properties $properties): string
     {
         return $this->process($template->content(), $properties);
     }
@@ -207,5 +211,15 @@ class Templex
     public function templateExtensions(): array
     {
         return $this->templateExtensions;
+    }
+
+    public function setSlots(array $slots): void
+    {
+        $this->slots = $slots;
+    }
+
+    public function addSlot(string $slots): void
+    {
+        $this->slots[] = $slots;
     }
 }

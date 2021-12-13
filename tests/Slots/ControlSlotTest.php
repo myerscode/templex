@@ -1,0 +1,171 @@
+<?php
+
+namespace Tests\Slots;
+
+use Myerscode\Templex\Exceptions\UnmatchedComparisonException;
+use Myerscode\Templex\Properties;
+use Tests\TestCase;
+
+class ControlSlotTest extends TestCase
+{
+
+    public function operatorProvider()
+    {
+        return [
+            '== pass' => ['==', "'a'", "'a'", 'pass'],
+            '== pass 2' => ['==', "'abc'", "'abc'", 'pass'],
+            '== fail' => ['==', "'a'", "'b'", 'fail'],
+            '=== pass' => ['===', "'a'", "'a'", 'pass'],
+            '=== pass 2' => ['===', "'abc'", "'abc'", 'pass'],
+            '=== fail' => ['===', "'a'", "'b'", 'fail'] ,
+            '!= pass' => ['!=', "'a'", "'a'", 'fail'],
+            '!= pass 2' => ['!=', "'a'", "'b'", 'pass'],
+            '!= pass 3' => ['!=', '7', 49, 'pass'],
+            '!= pass 4' => ['!=', "'abc'", "'abc'", 'fail'],
+            '!= fail' => ['!==', "'a'", "'b'", 'pass'],
+            '!== pass' => ['!==', "'a'", "'a'", 'fail'],
+            '!== pass 2' => ['!==', "'abc'", "'abc'", 'fail'],
+            '!== fail' => ['!==', "'49'", 49, 'pass'] ,
+            '> pass' => ['>', 49, 7, 'pass'] ,
+            '> fail' => ['>', 7, 49, 'fail'] ,
+            '>= equal pass' => ['>=', 7, 7, 'pass'] ,
+            '>= pass' => ['>=', 49, 48, 'pass'] ,
+            '>= fail' => ['>=', 7, 48, 'fail'] ,
+            '< pass' => ['<', 7, 49, 'pass'] ,
+            '< fail' => ['<', 49, 7, 'fail'] ,
+            '<= pass' => ['<=', 7, 49, 'pass'] ,
+            '<= pass equal' => ['<=', 49, 49, 'pass'] ,
+            '<= fail' => ['<=', 49, 7, 'fail'] ,
+        ];
+    }
+
+    public function testHandlesComparisons(): void
+    {
+        $data = [
+            'name' => 'Fred',
+            'value' => true,
+            'trueValue' => true,
+            'falseValue' => false,
+            'selfTrueValue' => true,
+            'selfFalseValue' => false,
+            'a' => '1',
+            'b' => '1',
+            'c' => 1,
+            'd' => 7,
+            'e' => 7,
+        ];
+
+        $result = $this->render->render('condition.stub', $data);
+
+        $this->assertEquals($this->expectedContent('condition.stub'), $result);
+    }
+
+    public function testHandlesSelfComparison(): void
+    {
+        $raw = '
+        <{ if ( $true ) }>
+            Value was true
+        <{ endif }>
+        ';
+
+        $expected = '
+        Value was true
+        ';
+        $result = $this->render->compile($this->rawStub($raw), new Properties(['true' => 'true']));
+        $this->assertEquals($expected, $result);
+    }
+
+    public function testHandlesBoolComparision(): void {
+        $raw = "
+        <{ if( true ) }>
+            pass
+        <{ else }>
+            fail
+        <{ endif }>
+        ";
+
+        $expected = "
+        pass
+        ";
+        $result = $this->render->compile($this->rawStub($raw), new Properties([]));
+        $this->assertEquals($expected, $result);
+
+        $raw = "
+        <{ if( false ) }>
+            pass
+        <{ else }>
+            fail
+        <{ endif }>
+        ";
+
+        $expected = "
+        fail
+        ";
+        $result = $this->render->compile($this->rawStub($raw), new Properties([]));
+        $this->assertEquals($expected, $result);
+    }
+
+    /**
+     * @dataProvider operatorProvider
+     */
+    public function testHandlesComparisonOperators($operator, $firstValue, $secondValue, $outcome): void
+    {
+        $raw = "
+        <{ if( $firstValue $operator $secondValue ) }>
+            pass
+        <{ else }>
+            fail
+        <{ endif }>
+        ";
+
+        $expected = "
+        $outcome
+        ";
+        $result = $this->render->compile($this->rawStub($raw), new Properties([]));
+        $this->assertEquals($expected, $result);
+    }
+
+    public function testThrowsErrorOnUnmatchedComparisons()
+    {
+        $this->expectException(UnmatchedComparisonException::class);
+        $this->render->render('unmatched-condition.stub');
+    }
+
+    public function testRenderWithSimpleLoop(): void
+    {
+        $data = [
+            'Users' => ['Fred', 'Chris', 'Tor'],
+            'abc' => ['a', 'b', 'c'],
+            'xyz' => ['x', 'y', 'z'],
+        ];
+
+        $result = $this->render->render('loop.stub', $data);
+
+        $this->assertEquals($this->expectedContent('loop.stub'), $result);
+    }
+
+    public function testWhiteSpaceThreshold(): void
+    {
+        $data = [
+            'Users' => ['Fred', 'Chris', 'Tor'],
+            'abc' => ['a', 'b', 'c'],
+            'xyz' => ['x', 'y', 'z'],
+        ];
+
+        $result = $this->render->render('white-space-loop.stub', $data);
+
+        $this->assertEquals($this->expectedContent('loop.stub'), $result);
+    }
+
+    public function testWhiteSpaceOfConditions(): void
+    {
+        $data = [
+            'trueValue' => true,
+            'falseValue' => false,
+        ];
+
+        $result = $this->render->render('white-space-condition', $data);
+
+        $this->assertEquals($this->expectedContent('white-space-condition.stub'), $result);
+    }
+}

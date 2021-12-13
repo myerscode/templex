@@ -21,21 +21,20 @@ class TemplexTest extends TestCase
         $this->assertEquals($this->expectedContent('php-parameters.stub'), $result);
     }
 
-//    public function testLoadsTemplates()
-//    {
-//        $expected = [
-//            'partials.header',
-//            'partials.stub-partial',
-//            'php-parameters',
-//        ];
-//
-//        $templates = $this->render->templates();
-//
-//        foreach ($expected as $expects) {
-//            $this->assertArrayHasKey($expects, $templates);
-//            $this->assertInstanceOf(Stub::class, $templates[$expects]);
-//        }
-//    }
+    public function testLoadsTemplates()
+    {
+        $expected = [
+            'partials.header',
+            'partials.stub-partial',
+            'php-parameters',
+        ];
+
+        $templates = $this->render->templates();
+
+        foreach ($expected as $expects) {
+            $this->assertArrayHasKey($expects, $templates);
+        }
+    }
 
     public function testCachesTemplate()
     {
