@@ -16,20 +16,17 @@ This means that you are able to simply generate _*new*_ PHP (or any type of text
 ## Install
 
 You can install this package via composer:
-
 ``` bash
 composer require myerscode/templex
 ```
 
 ## Usage
-
-
 ```php 
-    $templateDirectory = __DIR__ . '/Resources/Templates/;
-    $templateExtentions = 'stub';
-    $templex = new Templex($templateDirectory, $templateExtentions);
-    
-    echo $templex->render('index');
+$templateDirectory = __DIR__ . '/Resources/Templates/;
+$templateExtentions = 'stub';
+$templex = new Templex($templateDirectory, $templateExtentions);
+
+echo $templex->render('index');
 ```
 
 ### Template Directory
@@ -38,22 +35,22 @@ composer require myerscode/templex
 
 Templates can be any form of text based files. By default, Templex will look for files with `.stub` or `.template` file extensions.
 
-Templex uses `<{ }>` as anchor tags to find and process `Slots`
+Templex uses `<{` and `}>` as opening and closing anchor tags to find and process `Slots`, which can be used to generate 
+dynamic views from placeholders and logic.
 
-Slots are resolved in the following order of precedence:
-
-* IncludeSlot
-* ConditionSlot
-* LoopSlot
-* VariableSlot
 
 ## Slots
 
-Slots are the _magic_ of Templex. They are the isolated functionality that perform replacement and hydrating actions on a template 
-to create the final rendered output.
+Slots are the "_magic_" of Templex. They are the isolated functionality that perform replacement and hydrating actions 
+on a template to create the final rendered output.
 
+The default included slots are:
 
-### Includes
+* IncludeSlot - Includes another templates content
+* ControlSlot - Process flow based logic, such as foreach, if statements
+* VariableSlot - Replaces single placeholders
+
+## Includes
 
 To include another template, in order to create reusable stubs you can simply include it by its template name.
 
@@ -61,8 +58,21 @@ To include another template, in order to create reusable stubs you can simply in
 <{ include partials.header }>
 ```
 
-### Conditions
-Conditions can be variables or literal strings
+## Conditions
+Templex can process nested slots, so having nested control conditions are handled in the order they are found.
+
+Conditions can be variables, numbers, booleans or literal strings and can the usual comparison evaluators.
+```text
+<{ if( $value === 'foobar' ) }>
+...
+<{ if( $value > 7 ) }>
+...
+<{ if( $value == true ) }>
+...
+<{ if( $value != false ) }>
+```
+
+Examples
 ```text
 <{ if( $value === $condition ) }>
  <p>That value was true!</p>
@@ -75,8 +85,10 @@ Conditions can be variables or literal strings
 <{ endif }>
 ```
 
-### Loops
+## Loops
 Loops will take an array variable to create multiple iterations in your template.
+
+Examples
 ```text
 <ul class="row">
     <{ foreach( $users as $user ) }>
@@ -85,8 +97,10 @@ Loops will take an array variable to create multiple iterations in your template
 </ul>
 ```
 
-### Variables
+## Variables
 Variables are replaced matching anchors are found. They can are passed in at rendering, or created via other slots such as Loops.
+
+Examples
 ```text
 Hi <{ $name }>!
 ```
