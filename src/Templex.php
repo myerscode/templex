@@ -144,10 +144,15 @@ class Templex
     {
         $removeFromPath = [
             $this->templateDirectory,
-            ...$this->templateExtensions,
         ];
 
-        return (new StringService($templatePath))
+        $name = new StringService($templatePath);
+
+        foreach ($this->templateExtensions() as $extension) {
+            $name = $name->removeFromEnd($extension);
+        }
+
+        return $name
             ->replace($removeFromPath, '')
             ->trim(",. \t\n\r\0\x0B")
             ->replace(DIRECTORY_SEPARATOR, '.')
