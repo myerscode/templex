@@ -16,11 +16,6 @@ class RawFileStub implements StubInterface
         return $this->name;
     }
 
-    public function setContent(string $content)
-    {
-        $this->rawContent = $content;
-    }
-
     public function content(): string
     {
         return $this->rawContent;
