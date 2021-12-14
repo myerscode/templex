@@ -2,6 +2,7 @@
   "name": "myerscode/templex",
   "description": "A lightweight, regex based template rendering engine",
   "type": "project",
+  "license": "MIT",
   "authors": [
     {
       "name": "Fred Myerscough",
