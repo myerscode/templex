@@ -8,7 +8,6 @@ use Tests\TestCase;
 
 class ControlSlotTest extends TestCase
 {
-
     public function operatorProvider()
     {
         return [
@@ -17,7 +16,7 @@ class ControlSlotTest extends TestCase
             '== fail' => ['==', "'a'", "'b'", 'fail'],
             '=== pass' => ['===', "'a'", "'a'", 'pass'],
             '=== pass 2' => ['===', "'abc'", "'abc'", 'pass'],
-            '=== fail' => ['===', "'a'", "'b'", 'fail'] ,
+            '=== fail' => ['===', "'a'", "'b'", 'fail'],
             '!= pass' => ['!=', "'a'", "'a'", 'fail'],
             '!= pass 2' => ['!=', "'a'", "'b'", 'pass'],
             '!= pass 3' => ['!=', '7', 49, 'pass'],
@@ -25,17 +24,17 @@ class ControlSlotTest extends TestCase
             '!= fail' => ['!==', "'a'", "'b'", 'pass'],
             '!== pass' => ['!==', "'a'", "'a'", 'fail'],
             '!== pass 2' => ['!==', "'abc'", "'abc'", 'fail'],
-            '!== fail' => ['!==', "'49'", 49, 'pass'] ,
-            '> pass' => ['>', 49, 7, 'pass'] ,
-            '> fail' => ['>', 7, 49, 'fail'] ,
-            '>= equal pass' => ['>=', 7, 7, 'pass'] ,
-            '>= pass' => ['>=', 49, 48, 'pass'] ,
-            '>= fail' => ['>=', 7, 48, 'fail'] ,
-            '< pass' => ['<', 7, 49, 'pass'] ,
-            '< fail' => ['<', 49, 7, 'fail'] ,
-            '<= pass' => ['<=', 7, 49, 'pass'] ,
-            '<= pass equal' => ['<=', 49, 49, 'pass'] ,
-            '<= fail' => ['<=', 49, 7, 'fail'] ,
+            '!== fail' => ['!==', "'49'", 49, 'pass'],
+            '> pass' => ['>', 49, 7, 'pass'],
+            '> fail' => ['>', 7, 49, 'fail'],
+            '>= equal pass' => ['>=', 7, 7, 'pass'],
+            '>= pass' => ['>=', 49, 48, 'pass'],
+            '>= fail' => ['>=', 7, 48, 'fail'],
+            '< pass' => ['<', 7, 49, 'pass'],
+            '< fail' => ['<', 49, 7, 'fail'],
+            '<= pass' => ['<=', 7, 49, 'pass'],
+            '<= pass equal' => ['<=', 49, 49, 'pass'],
+            '<= fail' => ['<=', 49, 7, 'fail'],
         ];
     }
 
@@ -75,7 +74,8 @@ class ControlSlotTest extends TestCase
         $this->assertEquals($expected, $result);
     }
 
-    public function testHandlesBoolComparision(): void {
+    public function testHandlesBoolComparision(): void
+    {
         $raw = "
         <{ if( true ) }>
             pass

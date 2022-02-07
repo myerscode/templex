@@ -7,8 +7,6 @@ use Tests\TestCase;
 
 class IncludeSlotTest extends TestCase
 {
-
-
     public function testIncludesTemplate(): void
     {
         $result = $this->render->render('include-example');

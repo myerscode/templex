@@ -2,12 +2,10 @@
 
 namespace Tests;
 
-use Myerscode\Templex\Stub;
 use Myerscode\Templex\Templex;
 
 class TemplexTest extends TestCase
 {
-
     public function testRenderTemplateWithProperties(): void
     {
         $data = [

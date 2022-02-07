@@ -2,16 +2,11 @@
 
 namespace Tests;
 
-use Myerscode\Templex\Exceptions\TemplateNotFoundException;
-use Myerscode\Templex\Exceptions\VariableNotFoundException;
-use Myerscode\Templex\Properties;
 use Myerscode\Templex\Slots\ConditionSlot;
 use Myerscode\Templex\Slots\ControlSlot;
-use Myerscode\Templex\Stub;
 
 class SlotTest extends TestCase
 {
-
     public function testCanRenderNestedSlots(): void
     {
         $data = [
@@ -20,9 +15,9 @@ class SlotTest extends TestCase
                 'Chris',
                 'Tor',
             ],
-            'boolean' => 'true'
+            'boolean' => 'true',
         ];
-        $this->render->setSlots([ ControlSlot::class ]);
+        $this->render->setSlots([ControlSlot::class]);
 
         $result = $this->render->render('nested-slots', $data);
 
