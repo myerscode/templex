@@ -3,13 +3,10 @@
 namespace Tests;
 
 use Myerscode\Templex\Exceptions\TemplateNotFoundException;
-use Myerscode\Templex\Exceptions\VariableNotFoundException;
-use Myerscode\Templex\Properties;
 use Myerscode\Templex\Stub;
 
 class StubTest extends TestCase
 {
-
     public function testStubStoresProperties(): void
     {
         $path = __DIR__ . '/Resources/Templates/loop.stub';

@@ -7,7 +7,6 @@ use Myerscode\Templex\Properties;
 
 class PropertiesTest extends TestCase
 {
-
     public function testPropertiesCanFindVariable(): void
     {
         $properties = new Properties(['Users' => ['Fred', 'Tor', 'Chris']]);

@@ -6,7 +6,6 @@ use Myerscode\Templex\RawFileStub;
 
 class RawFileStubTest extends TestCase
 {
-
     public function testRawFileStubStoresProperties(): void
     {
         $content = 'Hello World';
