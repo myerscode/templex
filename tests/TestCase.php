@@ -3,6 +3,7 @@
 namespace Tests;
 
 use Myerscode\Templex\RawFileStub;
+use Myerscode\Templex\StubManager;
 use Myerscode\Templex\Templex;
 use Myerscode\Utilities\Files\Utility;
 use Myerscode\Utilities\Strings\Utility as StringUtility;
@@ -11,6 +12,8 @@ use PHPUnit\Framework\TestCase as BaseTestCase;
 class TestCase extends BaseTestCase
 {
     protected Templex $render;
+
+    protected StubManager $stubManager;
 
     public function text($text): StringUtility
     {
@@ -25,6 +28,7 @@ class TestCase extends BaseTestCase
     public function setUp(): void
     {
         $this->render = new Templex($this->templateDirectory(), '.stub');
+        $this->stubManager = new StubManager($this->templateDirectory(), '.stub');
     }
 
     public function templateDirectory(): string
