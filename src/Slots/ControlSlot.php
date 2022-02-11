@@ -234,7 +234,10 @@ class ControlSlot extends Slot
                 switch ($conditionType) {
                     case 'self':
                         $value = $variables->resolveValue(['variable' => $matches['variable']]);
-                        return boolval((int)filter_var($value, FILTER_VALIDATE_BOOLEAN));
+                        if (!in_array(mb_strtolower($value), ['true', 'false', '0', '1']) && !empty($value)) {
+                            return true;
+                        }
+                        return  boolval((int)filter_var($value, FILTER_VALIDATE_BOOLEAN));
                     case 'boolean':
                         return boolval((int)filter_var($matches['boolean'], FILTER_VALIDATE_BOOLEAN));
                     case 'comparison':
