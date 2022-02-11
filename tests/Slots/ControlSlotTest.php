@@ -211,4 +211,26 @@ class ControlSlotTest extends TestCase
 
         $this->assertEquals($this->expectedContent('white-space-condition.stub'), $result);
     }
+
+    public function testSwitchStatement(): void
+    {
+        $raw = '
+        <{ switch( $var ) }>
+            case a:
+            aaaa
+            case b:
+            bbb
+            case c:
+            cccc
+            default: "default"
+        <{ endswitch }>
+        ';
+
+        $expected = '
+            bbbb
+        ';
+
+        $result = $this->render->compile($this->rawStub($raw), new Properties(['var' => 'b']));
+        $this->assertEquals($expected, $result);
+    }
 }

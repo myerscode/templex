@@ -2,9 +2,12 @@
 
 namespace Myerscode\Templex\Slots;
 
+use Myerscode\Templex\Exceptions\UnknownControlStructureException;
 use Myerscode\Templex\Exceptions\UnmatchedComparisonException;
 use Myerscode\Templex\Properties;
 use Myerscode\Templex\Templex;
+
+use function PHPUnit\Framework\throwException;
 
 class ControlSlot extends Slot
 {
@@ -99,14 +102,17 @@ class ControlSlot extends Slot
         return $template;
     }
 
+    /**
+     * @throws UnknownControlStructureException
+     */
     protected function resolveControl(string $control, string $index, string $template, Properties $variables): string
     {
-        switch ($control) {
-            case 'foreach':
-                return $this->resolveForEach($index, $template, $variables);
-            case 'if':
-                return $this->resolveIfStatement($index, $template, $variables);
-        }
+        return match ($control) {
+            'foreach' => $this->resolveForEach($index, $template, $variables),
+            'if' => $this->resolveIfStatement($index, $template, $variables),
+            'switch' => $this->resolveSwitchStatement($index, $template, $variables),
+            default => throw new UnknownControlStructureException("Unknown control $control"),
+        };
     }
 
     protected function resolveForEach(string $index, string $template, Properties $variables): string
@@ -293,5 +299,59 @@ class ControlSlot extends Slot
             '<=' => $firstValue <= $secondValue,
             default => throw new \Exception("Unknown comparison operator found $operation"),
         };
+    }
+
+
+    protected function resolveSwitchStatement(string $index, string $template, Properties $variables): string
+    {
+        $regexParts = [
+            '/',
+            Templex::PLACEHOLDER_OPEN,
+            '\s*',
+            'switch(?<index>' . $index . ')',
+            '\s*\(',
+            '\s*',
+            '(?<variable>.+?)', // select the contents of the brackets, but don't be greedy
+            '\s*',
+            '\)',
+            '\s*',
+            Templex::PLACEHOLDER_CLOSE,
+            '(?<body>.+)',
+            Templex::PLACEHOLDER_OPEN,
+            '\s*',
+            'endswitch\k<index>',
+            '\s*',
+            Templex::PLACEHOLDER_CLOSE,
+            '/si',
+        ];
+        $selector = implode($regexParts);
+        $template = preg_replace_callback(
+            $selector,
+            function (array $matches) use ($variables): string {
+                dd($matches);
+//                $elseRegex = [
+//                    '/',
+//                    Templex::PLACEHOLDER_OPEN,
+//                    '\s*',
+//                    "else{$matches['index']}",
+//                    '\s*',
+//                    Templex::PLACEHOLDER_CLOSE,
+//                    '/si',
+//                ];
+//
+//                $conditionalBody = preg_split(implode($elseRegex), $matches['body']);
+//
+//                $condition = $this->resolveCondition(trim($matches['variable']), $variables);
+//
+//                if ($condition) {
+//                    return trim($conditionalBody[0]);
+//                }
+//
+//                return trim($conditionalBody[1] ?? '');
+            },
+            $template,
+        );
+
+        return '';
     }
 }
