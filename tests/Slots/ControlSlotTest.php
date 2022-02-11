@@ -38,6 +38,26 @@ class ControlSlotTest extends TestCase
         ];
     }
 
+    public function __truthyProvider()
+    {
+        return [
+            'true string' => ['true'],
+            'true bool' => [true],
+            'true int' => [1],
+            'word' => ['fred'],
+            'number' => [49],
+        ];
+    }
+
+    public function __falselyProvider()
+    {
+        return [
+            'true string' => ['false'],
+            'true bool' => [false],
+            'true int' => [0],
+        ];
+    }
+
     public function testHandlesComparisons(): void
     {
         $data = [
@@ -59,22 +79,45 @@ class ControlSlotTest extends TestCase
         $this->assertEquals($this->expectedContent('condition.stub'), $result);
     }
 
-    public function testHandlesSelfComparison(): void
+    /**
+     * @dataProvider __truthyProvider
+     */
+    public function testHandlesSelfTruthyComparison($var): void
     {
         $raw = '
-        <{ if ( $true ) }>
-            Value was true
+        <{ if ( $var ) }>
+            Value was ' . $var . '
         <{ endif }>
         ';
 
         $expected = '
-        Value was true
+        Value was ' . $var . '
         ';
-        $result = $this->render->compile($this->rawStub($raw), new Properties(['true' => 'true']));
+
+        $result = $this->render->compile($this->rawStub($raw), new Properties(['var' => $var]));
         $this->assertEquals($expected, $result);
     }
 
-    public function testHandlesBoolComparision(): void
+    /**
+     * @dataProvider __falselyProvider
+     */
+    public function testHandlesSelfFalselyComparison($var): void
+    {
+        $raw = '
+        <{ if ( $var ) }>
+            Value was ' . $var . '
+        <{ endif }>
+        ';
+
+        $expected = '
+        
+        ';
+
+        $result = $this->render->compile($this->rawStub($raw), new Properties(['var' => $var]));
+        $this->assertEquals($expected, $result);
+    }
+
+    public function testHandlesBoolComparison(): void
     {
         $raw = "
         <{ if( true ) }>
