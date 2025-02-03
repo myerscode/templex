@@ -4,7 +4,8 @@
 [![Latest Stable Version](https://poser.pugx.org/myerscode/templex/v/stable)](https://packagist.org/packages/myerscode/templex)
 [![Total Downloads](https://poser.pugx.org/myerscode/templex/downloads)](https://packagist.org/packages/myerscode/templex)
 [![License](https://poser.pugx.org/myerscode/templex/license)](https://packagist.org/packages/myerscode/templex)
-![Tests](https://github.com/myerscode/templex/workflows/Tests/badge.svg?branch=main)
+![Tests](https://github.com/myerscode/templex/actions/workflows/tests.yml/badge.svg?branch=main)
+[![codecov](https://codecov.io/gh/myerscode/templex/graph/badge.svg?token=YR0YHVERNV)](https://codecov.io/gh/myerscode/templex)
 
 ## Why this package is helpful?
 
