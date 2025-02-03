@@ -2,6 +2,8 @@
 
 namespace Myerscode\Templex\Slots;
 
+use Exception;
+use Myerscode\Templex\Exceptions\VariableNotFoundException;
 use Myerscode\Templex\Exceptions\UnmatchedComparisonException;
 use Myerscode\Templex\Properties;
 use Myerscode\Templex\Templex;
@@ -37,7 +39,7 @@ class ControlSlot extends Slot
 
         $lastIf = [];
 
-        return preg_replace_callback(implode($controlStructureRegexParts), function (array $matches) use (&$lastIf): string {
+        return preg_replace_callback(implode('', $controlStructureRegexParts), function (array $matches) use (&$lastIf): string {
 
             if ($matches['structure'] === 'else') {
                 return sprintf(
@@ -48,7 +50,7 @@ class ControlSlot extends Slot
                 );
             }
 
-            $this->levelCounter[$this->depthCounter] = $this->levelCounter[$this->depthCounter] ?? 0;
+            $this->levelCounter[$this->depthCounter] ??= 0;
 
             $isEndTag = str_starts_with($matches['structure'], 'end');
 
@@ -87,9 +89,9 @@ class ControlSlot extends Slot
 
         $matches = [];
 
-        preg_match(implode($regexParts), $template, $matches);
+        preg_match(implode('', $regexParts), $template, $matches);
 
-        if (!empty($matches)) {
+        if ($matches !== []) {
             $control = $matches['control'];
             $index = $matches['index'];
             $template = $this->resolveControl($control, $index, $template, $variables);
@@ -132,7 +134,7 @@ class ControlSlot extends Slot
         ];
 
         return preg_replace_callback(
-            implode($regexParts),
+            implode('', $regexParts),
             function (array $matches) use ($variables): string {
                 $output = '';
                 foreach ($variables->resolveValue($matches) as $value) {
@@ -175,20 +177,20 @@ class ControlSlot extends Slot
         ];
 
         $template = preg_replace_callback(
-            implode($regexParts),
+            implode('', $regexParts),
             function (array $matches) use ($variables): string {
 
                 $elseRegex = [
                     '/',
                     Templex::PLACEHOLDER_OPEN,
                     '\s*',
-                    "else{$matches['index']}",
+                    'else' . $matches['index'],
                     '\s*',
                     Templex::PLACEHOLDER_CLOSE,
                     '/si',
                 ];
 
-                $conditionalBody = preg_split(implode($elseRegex), $matches['body']);
+                $conditionalBody = preg_split(implode('', $elseRegex), $matches['body']);
 
                 $condition = $this->resolveCondition(trim($matches['variable']), $variables);
 
@@ -205,7 +207,7 @@ class ControlSlot extends Slot
     }
 
     /**
-     * @throws \Myerscode\Templex\Exceptions\VariableNotFoundException
+     * @throws VariableNotFoundException
      * @throws UnmatchedComparisonException
      */
     protected function resolveCondition(string $condition, Properties $variables): bool
@@ -237,6 +239,7 @@ class ControlSlot extends Slot
                         if (!in_array(mb_strtolower($value), ['true', 'false', '0', '1']) && !empty($value)) {
                             return true;
                         }
+
                         return  boolval((int)filter_var($value, FILTER_VALIDATE_BOOLEAN));
                     case 'boolean':
                         return boolval((int)filter_var($matches['boolean'], FILTER_VALIDATE_BOOLEAN));
@@ -246,7 +249,7 @@ class ControlSlot extends Slot
             }
         }
 
-        throw new UnmatchedComparisonException("Unable to resolve condition \"$condition\"");
+        throw new UnmatchedComparisonException(sprintf('Unable to resolve condition "%s"', $condition));
     }
 
     protected function resolveComparison($matches, Properties $variables): bool
@@ -266,20 +269,16 @@ class ControlSlot extends Slot
             $firstValue = $variables->resolveValue(['variable' => $matches['first_value']]);
         } elseif ($firstIsNumber) {
             $firstValue = ($matches['first_is_number'] . $matches['first_value']) * 1;
-        } else {
-            if ($firstIsLiteral) {
-                $firstValue = $matches['first_literal_value'];
-            }
+        } elseif ($firstIsLiteral) {
+            $firstValue = $matches['first_literal_value'];
         }
 
         if ($secondIsVar) {
             $secondValue = $variables->resolveValue(['variable' => $matches['second_value']]);
         } elseif ($secondIsNumber) {
             $secondValue = ($matches['second_is_number'] . $matches['second_value']) * 1;
-        } else {
-            if ($secondIsLiteral) {
-                $secondValue = $matches['second_literal_value'];
-            }
+        } elseif ($secondIsLiteral) {
+            $secondValue = $matches['second_literal_value'];
         }
 
         return match ($operation) {
@@ -291,7 +290,7 @@ class ControlSlot extends Slot
             '<' => $firstValue < $secondValue,
             '>=' => $firstValue >= $secondValue,
             '<=' => $firstValue <= $secondValue,
-            default => throw new \Exception("Unknown comparison operator found $operation"),
+            default => throw new Exception('Unknown comparison operator found ' . $operation),
         };
     }
 }

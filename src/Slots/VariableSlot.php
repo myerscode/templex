@@ -15,9 +15,7 @@ class VariableSlot extends Slot
 
         return (string) preg_replace_callback(
             $regex,
-            function (array $matches) use ($variables): string {
-                return $variables->resolveValue($matches);
-            },
+            fn(array $matches): string => $variables->resolveValue($matches),
             $template
         );
     }

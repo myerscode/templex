@@ -6,7 +6,7 @@ use Myerscode\Templex\Templex;
 
 class StubManagerTest extends TestCase
 {
-    public function testLoadsTemplates()
+    public function testLoadsTemplates(): void
     {
         $expected = [
             'partials.header',
@@ -21,14 +21,14 @@ class StubManagerTest extends TestCase
         }
     }
 
-    public function testCachesTemplate()
+    public function testCachesTemplate(): void
     {
         $this->assertFalse($this->stubManager->isTemplateCached('text-only'));
         $this->stubManager->cacheTemplates();
         $this->assertTrue($this->stubManager->isTemplateCached('text-only'));
     }
 
-    public function testCachesTemplateIfNotLoaded()
+    public function testCachesTemplateIfNotLoaded(): void
     {
         $this->assertFalse($this->stubManager->isTemplateCached('text-only'));
         $this->stubManager->getStub('text-only');
@@ -37,7 +37,7 @@ class StubManagerTest extends TestCase
         $this->stubManager->getStub('text-only');
     }
 
-    public function testIsTemplate()
+    public function testIsTemplate(): void
     {
         $this->assertTrue($this->stubManager->isTemplate('loop'));
         $this->assertTrue($this->stubManager->isTemplate('partials.header'));
@@ -46,7 +46,7 @@ class StubManagerTest extends TestCase
         $this->assertFalse($this->stubManager->isTemplate('partials.error'));
     }
 
-    public function testTemplateNamesAreLowerCase()
+    public function testTemplateNamesAreLowerCase(): void
     {
         $this->assertTrue($this->stubManager->isTemplate('loop'));
         $this->assertFalse($this->stubManager->isTemplate('LOOP'));
@@ -54,14 +54,14 @@ class StubManagerTest extends TestCase
         $this->assertFalse($this->stubManager->isTemplate('PARTIALS.HEADER'));
     }
 
-    public function testClearTemplateCache()
+    public function testClearTemplateCache(): void
     {
-        $this->assertTrue(count($this->stubManager->templates()) > 0);
+        $this->assertTrue($this->stubManager->templates() !== []);
         $this->stubManager->clearTemplateCache();
-        $this->assertTrue(count($this->stubManager->templates()) === 0);
+        $this->assertTrue($this->stubManager->templates() === []);
     }
 
-    public function testSetsCustomExtensions()
+    public function testSetsCustomExtensions(): void
     {
         $this->assertEquals(['stub'], $this->stubManager->templateExtensions());
 

@@ -27,6 +27,6 @@ class Stub extends AbstractStub implements StubInterface
             return (string) file_get_contents($this->path);
         }
 
-        throw new TemplateNotFoundException("Template $this->name not found");
+        throw new TemplateNotFoundException(sprintf('Template %s not found', $this->name));
     }
 }

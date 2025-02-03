@@ -20,7 +20,7 @@ class TemplexTest extends TestCase
     }
 
 
-    public function testSetsDefaultExtensions()
+    public function testSetsDefaultExtensions(): void
     {
         $templex = new Templex(__DIR__ . '/Resources/Templates/');
 
@@ -29,7 +29,7 @@ class TemplexTest extends TestCase
 
 
 
-    public function testSanitisesExtensions()
+    public function testSanitisesExtensions(): void
     {
         $templex = new Templex(__DIR__ . '/Resources/Templates/', '.stub,   template,  .tmpl,stub');
 

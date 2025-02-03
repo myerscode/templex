@@ -19,7 +19,7 @@ class Properties
         $variable = $matches['variable'] ?? null;
 
         if (!isset($this->variables[$variable])) {
-            throw new VariableNotFoundException("$variable not found");
+            throw new VariableNotFoundException($variable . ' not found');
         }
 
         return $this->variables[$variable];

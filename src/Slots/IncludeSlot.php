@@ -22,13 +22,14 @@ class IncludeSlot extends Slot
         ];
 
         return (string) preg_replace_callback(
-            implode($regex),
+            implode('', $regex),
             function (array $matches) use ($variables): string {
                 $include = $matches[1];
                 if ($this->engine->isTemplate($include)) {
                     return $this->engine->getTemplate($include);
                 }
-                throw new TemplateNotFoundException("Could not include $include, as template not found");
+
+                throw new TemplateNotFoundException(sprintf('Could not include %s, as template not found', $include));
             },
             $template
         );

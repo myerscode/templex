@@ -47,13 +47,9 @@ class StubManager
 
     public function setTemplateExtensions(array|string $templateExtensions): void
     {
-        if (is_string($templateExtensions)) {
-            $extensions = explode(',', $templateExtensions);
-        } else {
-            $extensions = $templateExtensions;
-        }
+        $extensions = is_string($templateExtensions) ? explode(',', $templateExtensions) : $templateExtensions;
 
-        $extensions = array_filter($extensions, fn($value) => is_string($value) && $value !== '');
+        $extensions = array_filter($extensions, fn($value): bool => is_string($value) && $value !== '');
 
         $this->templateExtensions = array_unique(array_map(fn($extension) => (new StringService($extension))->trim(",. \t\n\r\0\x0B")->value(), $extensions));
     }
@@ -72,7 +68,7 @@ class StubManager
         $fileService = new FileService($this->templateDirectory);
 
         $templateList = array_map(
-            fn(SplFileInfo $file) => new Stub($this->makeTemplateName($file->getRealPath()), $file->getRealPath()),
+            fn(SplFileInfo $file): Stub => new Stub($this->makeTemplateName($file->getRealPath()), $file->getRealPath()),
             $fileService->files()
         );
 
@@ -102,9 +98,10 @@ class StubManager
     {
         if (isset($this->cached[$template]) && ($this->cached[$template] instanceof Stub)) {
             return $this->cached[$template];
-        } elseif (isset($this->cached[$template]) && is_string($this->cached[$template])) {
-            $this->cached[$template] = new Stub($template, $this->cached[$template]);
+        }
 
+        if (isset($this->cached[$template]) && is_string($this->cached[$template])) {
+            $this->cached[$template] = new Stub($template, $this->cached[$template]);
             return $this->cached[$template];
         }
 
@@ -118,7 +115,7 @@ class StubManager
             return $this->cached[$templateName];
         }
 
-        throw new TemplateNotFoundException("Template $templateName not found");
+        throw new TemplateNotFoundException(sprintf('Template %s not found', $templateName));
     }
 
     public function isTemplate(string $template): bool

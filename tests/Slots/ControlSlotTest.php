@@ -8,7 +8,7 @@ use Tests\TestCase;
 
 class ControlSlotTest extends TestCase
 {
-    public function operatorProvider()
+    public static function operatorProvider(): array
     {
         return [
             '== pass' => ['==', "'a'", "'a'", 'pass'],
@@ -38,7 +38,7 @@ class ControlSlotTest extends TestCase
         ];
     }
 
-    public function __truthyProvider()
+    public static function __truthyProvider(): array
     {
         return [
             'true string' => ['true'],
@@ -49,7 +49,7 @@ class ControlSlotTest extends TestCase
         ];
     }
 
-    public function __falselyProvider()
+    public static function __falselyProvider(): array
     {
         return [
             'true string' => ['false'],
@@ -82,7 +82,7 @@ class ControlSlotTest extends TestCase
     /**
      * @dataProvider __truthyProvider
      */
-    public function testHandlesSelfTruthyComparison($var): void
+    public function testHandlesSelfTruthyComparison(string|bool|int $var): void
     {
         $raw = '
         <{ if ( $var ) }>
@@ -101,7 +101,7 @@ class ControlSlotTest extends TestCase
     /**
      * @dataProvider __falselyProvider
      */
-    public function testHandlesSelfFalselyComparison($var): void
+    public function testHandlesSelfFalselyComparison(string|bool|int $var): void
     {
         $raw = '
         <{ if ( $var ) }>
@@ -151,10 +151,10 @@ class ControlSlotTest extends TestCase
     /**
      * @dataProvider operatorProvider
      */
-    public function testHandlesComparisonOperators($operator, $firstValue, $secondValue, $outcome): void
+    public function testHandlesComparisonOperators(string $operator, string|int $firstValue, string|int $secondValue, string $outcome): void
     {
         $raw = "
-        <{ if( $firstValue $operator $secondValue ) }>
+        <{ if( {$firstValue} {$operator} {$secondValue} ) }>
             pass
         <{ else }>
             fail
@@ -162,13 +162,13 @@ class ControlSlotTest extends TestCase
         ";
 
         $expected = "
-        $outcome
+        {$outcome}
         ";
         $result = $this->render->compile($this->rawStub($raw), new Properties([]));
         $this->assertEquals($expected, $result);
     }
 
-    public function testThrowsErrorOnUnmatchedComparisons()
+    public function testThrowsErrorOnUnmatchedComparisons(): void
     {
         $this->expectException(UnmatchedComparisonException::class);
         $this->render->render('unmatched-condition.stub');
