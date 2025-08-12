@@ -1,0 +1,65 @@
+User Role: <{ switch( $role ) }>
+    <{ case( 'admin' ) }>
+        Administrator - Full Access
+    <{ case( 'moderator' ) }>
+        Moderator - Limited Access
+    <{ case( 'user' ) }>
+        Regular User - Basic Access
+    <{ default }>
+        Guest - No Access
+<{ endswitch }>
+
+Priority Level: <{ switch( $priority ) }>
+    <{ case( 1 ) }>
+        Critical
+    <{ case( 2 ) }>
+        High
+    <{ case( 3 ) }>
+        Medium
+    <{ case( 4 ) }>
+        Low
+    <{ default }>
+        Unknown Priority
+<{ endswitch }>
+
+Feature Status: <{ switch( $enabled ) }>
+    <{ case( true ) }>
+        Enabled
+    <{ case( false ) }>
+        Disabled
+<{ endswitch }>
+
+Nested Example:
+<{ switch( $category ) }>
+    <{ case( 'tech' ) }>
+        Technology Category
+        <{ switch( $subcategory ) }>
+            <{ case( 'software' ) }>
+                - Software Development
+            <{ case( 'hardware' ) }>
+                - Hardware Engineering
+            <{ default }>
+                - General Technology
+        <{ endswitch }>
+    <{ case( 'business' ) }>
+        Business Category
+        <{ switch( $subcategory ) }>
+            <{ case( 'finance' ) }>
+                - Financial Services
+            <{ case( 'marketing' ) }>
+                - Marketing & Sales
+            <{ default }>
+                - General Business
+        <{ endswitch }>
+    <{ default }>
+        Other Category
+<{ endswitch }>
+
+Variable Case Example: <{ switch( $userType ) }>
+    <{ case( $adminType ) }>
+        Admin User Type
+    <{ case( $guestType ) }>
+        Guest User Type
+    <{ default }>
+        Unknown User Type
+<{ endswitch }>

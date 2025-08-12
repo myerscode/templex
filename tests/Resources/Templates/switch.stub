@@ -1,0 +1,26 @@
+<{ switch( $status ) }>
+    <{ case( 'active' ) }>
+        <p>Status is active</p>
+    <{ case( 'inactive' ) }>
+        <p>Status is inactive</p>
+    <{ case( 'pending' ) }>
+        <p>Status is pending</p>
+    <{ default }>
+        <p>Unknown status</p>
+<{ endswitch }>
+
+<{ switch( $number ) }>
+    <{ case( 1 ) }>
+        <p>Number is one</p>
+    <{ case( 2 ) }>
+        <p>Number is two</p>
+    <{ default }>
+        <p>Number is something else</p>
+<{ endswitch }>
+
+<{ switch( $boolean ) }>
+    <{ case( true ) }>
+        <p>Boolean is true</p>
+    <{ case( false ) }>
+        <p>Boolean is false</p>
+<{ endswitch }>

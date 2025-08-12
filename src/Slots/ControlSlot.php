@@ -32,20 +32,30 @@ class ControlSlot extends Slot
             '(?:end)?if|else|',
             '(?:end)?foreach|',
             '(?:end)?for|',
-            '(?:end)?switch',
+            '(?:end)?switch|case|default',
             '))',
             '/i',
         ];
 
         $lastIf = [];
+        $lastSwitch = [];
 
-        return preg_replace_callback(implode('', $controlStructureRegexParts), function (array $matches) use (&$lastIf): string {
+        return preg_replace_callback(implode('', $controlStructureRegexParts), function (array $matches) use (&$lastIf, &$lastSwitch): string {
 
             if ($matches['structure'] === 'else') {
                 return sprintf(
                     '%s-%s-%s',
                     $matches[0],
                     array_pop($lastIf),
+                    ($this->depthCounter - 1)
+                );
+            }
+
+            if (in_array($matches['structure'], ['case', 'default'])) {
+                return sprintf(
+                    '%s-%s-%s',
+                    $matches[0],
+                    end($lastSwitch),
                     ($this->depthCounter - 1)
                 );
             }
@@ -67,6 +77,16 @@ class ControlSlot extends Slot
             // take note of the level if the if is on, so can reference when a else is found
             if ($matches['structure'] === 'if') {
                 $lastIf[] = $level;
+            }
+
+            // take note of the level if the switch is on, so can reference when case/default is found
+            if ($matches['structure'] === 'switch') {
+                $lastSwitch[] = $level;
+            }
+
+            // remove the switch level when endswitch is found
+            if ($matches['structure'] === 'endswitch') {
+                array_pop($lastSwitch);
             }
 
             return sprintf(
@@ -108,6 +128,8 @@ class ControlSlot extends Slot
                 return $this->resolveForEach($index, $template, $variables);
             case 'if':
                 return $this->resolveIfStatement($index, $template, $variables);
+            case 'switch':
+                return $this->resolveSwitch($index, $template, $variables);
         }
     }
 
@@ -204,6 +226,161 @@ class ControlSlot extends Slot
         );
 
         return (new VariableSlot($this->engine))->process($template, $variables);
+    }
+
+    protected function resolveSwitch(string $index, string $template, Properties $variables): string
+    {
+        $regexParts = [
+            '/',
+            Templex::PLACEHOLDER_OPEN,
+            '\s*',
+            'switch(?<index>' . $index . ')',
+            '\s*\(',
+            '\s*',
+            '(?<variable>.+?)', // select the contents of the brackets, but don't be greedy
+            '\s*',
+            '\)',
+            '\s*',
+            Templex::PLACEHOLDER_CLOSE,
+            '(?<body>.+)',
+            Templex::PLACEHOLDER_OPEN,
+            '\s*',
+            'endswitch\k<index>',
+            '\s*',
+            Templex::PLACEHOLDER_CLOSE,
+            '/si',
+        ];
+
+        $template = preg_replace_callback(
+            implode('', $regexParts),
+            function (array $matches) use ($variables): string {
+                $switchVariable = trim($matches['variable']);
+                $switchBody = $matches['body'];
+                $switchIndex = $matches['index'];
+
+                // Get the value to switch on
+                $switchValue = $this->resolveSwitchValue($switchVariable, $variables);
+
+                // Parse cases and default
+                $cases = $this->parseSwitchCases($switchBody, $switchIndex);
+
+                // Find matching case or default
+                foreach ($cases as $case) {
+                    if ($case['type'] === 'case' && $this->compareSwitchValues($switchValue, $case['value'], $variables)) {
+                        return trim($case['body']);
+                    }
+                }
+
+                // If no case matched, look for default
+                foreach ($cases as $case) {
+                    if ($case['type'] === 'default') {
+                        return trim($case['body']);
+                    }
+                }
+
+                // No match and no default
+                return '';
+            },
+            $template,
+        );
+
+        return (new VariableSlot($this->engine))->process($template, $variables);
+    }
+
+    protected function resolveSwitchValue(string $variable, Properties $variables): mixed
+    {
+        // Handle variable references
+        if (preg_match('/^\$(\w+)$/', $variable, $matches)) {
+            return $variables->resolveValue(['variable' => $matches[1]]);
+        }
+
+        // Handle string literals
+        if (preg_match('/^["\'](.+)["\']$/', $variable, $matches)) {
+            return $matches[1];
+        }
+
+        // Handle numeric literals
+        if (is_numeric($variable)) {
+            return is_float($variable + 0) ? (float)$variable : (int)$variable;
+        }
+
+        // Handle boolean literals
+        if (strtolower($variable) === 'true') {
+            return true;
+        }
+        if (strtolower($variable) === 'false') {
+            return false;
+        }
+
+        // Return as string if nothing else matches
+        return $variable;
+    }
+
+    protected function parseSwitchCases(string $body, string $index): array
+    {
+        $cases = [];
+        
+        // Regex to find case statements
+        $caseRegex = [
+            '/',
+            Templex::PLACEHOLDER_OPEN,
+            '\s*',
+            'case' . $index,
+            '\s*\(',
+            '\s*',
+            '(?<value>.+?)',
+            '\s*',
+            '\)',
+            '\s*',
+            Templex::PLACEHOLDER_CLOSE,
+            '(?<body>.*?)(?=',
+            Templex::PLACEHOLDER_OPEN,
+            '\s*(?:case' . $index . '|default' . $index . '|endswitch' . $index . ')',
+            '|$)',
+            '/si',
+        ];
+
+        // Find all case statements
+        preg_match_all(implode('', $caseRegex), $body, $caseMatches, PREG_SET_ORDER);
+        
+        foreach ($caseMatches as $match) {
+            $cases[] = [
+                'type' => 'case',
+                'value' => trim($match['value']),
+                'body' => $match['body']
+            ];
+        }
+
+        // Regex to find default statement
+        $defaultRegex = [
+            '/',
+            Templex::PLACEHOLDER_OPEN,
+            '\s*',
+            'default' . $index,
+            '\s*',
+            Templex::PLACEHOLDER_CLOSE,
+            '(?<body>.*?)(?=',
+            Templex::PLACEHOLDER_OPEN,
+            '\s*(?:case' . $index . '|endswitch' . $index . ')',
+            '|$)',
+            '/si',
+        ];
+
+        if (preg_match(implode('', $defaultRegex), $body, $defaultMatch)) {
+            $cases[] = [
+                'type' => 'default',
+                'value' => null,
+                'body' => $defaultMatch['body']
+            ];
+        }
+
+        return $cases;
+    }
+
+    protected function compareSwitchValues(mixed $switchValue, string $caseValue, Properties $variables): bool
+    {
+        $resolvedCaseValue = $this->resolveSwitchValue($caseValue, $variables);
+        return $switchValue === $resolvedCaseValue;
     }
 
     /**
