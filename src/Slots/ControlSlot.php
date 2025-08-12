@@ -130,6 +130,8 @@ class ControlSlot extends Slot
                 return $this->resolveIfStatement($index, $template, $variables);
             case 'switch':
                 return $this->resolveSwitch($index, $template, $variables);
+            case 'for':
+                return $this->resolveFor($index, $template, $variables);
         }
     }
 
@@ -381,6 +383,173 @@ class ControlSlot extends Slot
     {
         $resolvedCaseValue = $this->resolveSwitchValue($caseValue, $variables);
         return $switchValue === $resolvedCaseValue;
+    }
+
+    protected function resolveFor(string $index, string $template, Properties $variables): string
+    {
+        $regexParts = [
+            '/',
+            Templex::PLACEHOLDER_OPEN,
+            '\s*',
+            'for(?<index>' . $index . ')\(',
+            '\s*',
+            '(?<init>.+?);',
+            '\s*',
+            '(?<condition>.+?);',
+            '\s*',
+            '(?<increment>.+?)',
+            '\s*\)\s*',
+            Templex::PLACEHOLDER_CLOSE,
+            '\s*(?<body>.+)\s?',
+            Templex::PLACEHOLDER_OPEN,
+            '\s*',
+            'endfor\k<index>',
+            '\s*',
+            Templex::PLACEHOLDER_CLOSE,
+            '/si',
+        ];
+
+        return preg_replace_callback(
+            implode('', $regexParts),
+            function (array $matches) use ($variables): string {
+                $init = trim($matches['init']);
+                $condition = trim($matches['condition']);
+                $increment = trim($matches['increment']);
+                $body = $matches['body'];
+
+                // Parse initialization (e.g., $i = 0)
+                $initParts = $this->parseForInit($init, $variables);
+                $loopVar = $initParts['variable'];
+                $startValue = $initParts['value'];
+
+                // Parse condition (e.g., $i < 10)
+                $conditionParts = $this->parseForCondition($condition);
+                $operator = $conditionParts['operator'];
+                $endValue = $this->resolveForValue($conditionParts['value'], $variables);
+
+                // Parse increment (e.g., $i++)
+                $incrementParts = $this->parseForIncrement($increment);
+                $incrementType = $incrementParts['type'];
+                $incrementValue = $incrementParts['value'];
+
+                $output = '';
+                $currentValue = $startValue;
+
+                // Execute the for loop
+                while ($this->evaluateForCondition($currentValue, $operator, $endValue)) {
+                    $scope = array_merge(
+                        $variables->variables(),
+                        [$loopVar => $currentValue]
+                    );
+                    $processedBody = $this->processIndexes($body, new Properties($scope));
+                    $output .= (new VariableSlot($this->engine))->process($processedBody, new Properties($scope));
+
+                    // Apply increment
+                    $currentValue = $this->applyForIncrement($currentValue, $incrementType, $incrementValue);
+                }
+
+                return trim($output);
+            },
+            $template
+        );
+    }
+
+    protected function parseForInit(string $init, Properties $variables): array
+    {
+        // Parse patterns like: $i = 0, $i = $start, $counter = 1
+        if (preg_match('/^\$(\w+)\s*=\s*(.+)$/', $init, $matches)) {
+            $variable = $matches[1];
+            $value = $this->resolveForValue(trim($matches[2]), $variables);
+            return ['variable' => $variable, 'value' => $value];
+        }
+
+        throw new \Exception("Invalid for loop initialization: {$init}");
+    }
+
+    protected function parseForCondition(string $condition): array
+    {
+        // Parse patterns like: $i < 10, $i <= $max, $counter > 0
+        if (preg_match('/^\$\w+\s*([<>=!]+)\s*(.+)$/', $condition, $matches)) {
+            $operator = trim($matches[1]);
+            $value = trim($matches[2]);
+            return ['operator' => $operator, 'value' => $value];
+        }
+
+        throw new \Exception("Invalid for loop condition: {$condition}");
+    }
+
+    protected function parseForIncrement(string $increment): array
+    {
+        // Parse patterns like: $i++, $i--, $i += 2, $i -= 1
+        if (preg_match('/^\$\w+\+\+$/', $increment)) {
+            return ['type' => '++', 'value' => 1];
+        }
+        if (preg_match('/^\$\w+--$/', $increment)) {
+            return ['type' => '--', 'value' => 1];
+        }
+        if (preg_match('/^\$\w+\s*\+=\s*(.+)$/', $increment, $matches)) {
+            return ['type' => '+=', 'value' => (int)trim($matches[1])];
+        }
+        if (preg_match('/^\$\w+\s*-=\s*(.+)$/', $increment, $matches)) {
+            return ['type' => '-=', 'value' => (int)trim($matches[1])];
+        }
+
+        throw new \Exception("Invalid for loop increment: {$increment}");
+    }
+
+    protected function resolveForValue(string $value, Properties $variables): mixed
+    {
+        // Handle variable references
+        if (preg_match('/^\$(\w+)$/', $value, $matches)) {
+            return $variables->resolveValue(['variable' => $matches[1]]);
+        }
+
+        // Handle numeric literals
+        if (is_numeric($value)) {
+            return is_float($value + 0) ? (float)$value : (int)$value;
+        }
+
+        // Handle string literals
+        if (preg_match('/^["\'](.+)["\']$/', $value, $matches)) {
+            return $matches[1];
+        }
+
+        // Handle boolean literals
+        if (strtolower($value) === 'true') {
+            return true;
+        }
+        if (strtolower($value) === 'false') {
+            return false;
+        }
+
+        // Return as numeric if it looks like a number, otherwise as string
+        return is_numeric($value) ? (int)$value : $value;
+    }
+
+    protected function evaluateForCondition(mixed $currentValue, string $operator, mixed $endValue): bool
+    {
+        return match ($operator) {
+            '<' => $currentValue < $endValue,
+            '<=' => $currentValue <= $endValue,
+            '>' => $currentValue > $endValue,
+            '>=' => $currentValue >= $endValue,
+            '==' => $currentValue == $endValue,
+            '===' => $currentValue === $endValue,
+            '!=' => $currentValue != $endValue,
+            '!==' => $currentValue !== $endValue,
+            default => throw new \Exception("Unknown for loop operator: {$operator}"),
+        };
+    }
+
+    protected function applyForIncrement(mixed $currentValue, string $incrementType, mixed $incrementValue): mixed
+    {
+        return match ($incrementType) {
+            '++' => $currentValue + 1,
+            '--' => $currentValue - 1,
+            '+=' => $currentValue + $incrementValue,
+            '-=' => $currentValue - $incrementValue,
+            default => throw new \Exception("Unknown increment type: {$incrementType}"),
+        };
     }
 
     /**

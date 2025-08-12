@@ -1,0 +1,33 @@
+Basic For Loop:
+<p>Iteration 0</p>
+<p>Iteration 1</p>
+<p>Iteration 2</p>
+<p>Iteration 3</p>
+<p>Iteration 4</p>
+
+Countdown Loop:
+<p>Countdown: 3</p>
+<p>Countdown: 2</p>
+<p>Countdown: 1</p>
+
+Step by 2:
+<p>Even number: 0</p>
+<p>Even number: 2</p>
+<p>Even number: 4</p>
+<p>Even number: 6</p>
+<p>Even number: 8</p>
+
+Variable Limits:
+<p>Number: 5</p>
+<p>Number: 6</p>
+<p>Number: 7</p>
+
+Nested For Loops:
+<div>Outer: 1
+        <span>Inner: 1</span>
+        <span>Inner: 2</span>
+    </div>
+<div>Outer: 2
+        <span>Inner: 1</span>
+        <span>Inner: 2</span>
+    </div>

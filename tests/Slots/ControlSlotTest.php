@@ -212,5 +212,4 @@ class ControlSlotTest extends TestCase
         $this->assertEquals($this->expectedContent('white-space-condition.stub'), $result);
     }
 
-
 }

@@ -16,7 +16,7 @@ Templex uses `<{` and `}>` as delimiters for all template directives:
 - **Variables**: `<{ $variableName }>`
 - **Includes**: `<{ include template.name }>`
 - **Conditions**: `<{ if( condition ) }>....<{ endif }>`
-- **Loops**: `<{ foreach( $array as $item ) }>....<{ endforeach }>`
+- **Loops**: `<{ foreach( $array as $item ) }>....<{ endforeach }>` and `<{ for( $i = 0; $i < 10; $i++ ) }>....<{ endfor }>`
 - **Switch Statements**: `<{ switch( $variable ) }>....<{ endswitch }>`
 
 #### Slots System
@@ -30,7 +30,7 @@ Templex processes templates through a slot system:
 
 #### Control Structures
 - **Conditional Logic**: if/else statements with comparison operators
-- **Loops**: foreach loops with nested support
+- **Loops**: foreach loops and for loops with nested support
 - **Switch Statements**: Multi-case conditional logic with default fallback
 
 #### Template Management
@@ -67,6 +67,7 @@ $templex = new Templex($templateDir, 'stub,template,tpl');
 ### Examples & Guides
 
 - [Switch Examples](switch-examples.md) - Comprehensive switch statement usage guide
+- [For Loop Examples](for-loop-examples.md) - Complete guide to using for loops
 
 ---
 

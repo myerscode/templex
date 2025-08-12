@@ -1,0 +1,28 @@
+Basic For Loop:
+<{ for( $i = 0; $i < 5; $i++ ) }>
+    <p>Iteration <{ $i }></p>
+<{ endfor }>
+
+Countdown Loop:
+<{ for( $j = 3; $j > 0; $j-- ) }>
+    <p>Countdown: <{ $j }></p>
+<{ endfor }>
+
+Step by 2:
+<{ for( $k = 0; $k < 10; $k += 2 ) }>
+    <p>Even number: <{ $k }></p>
+<{ endfor }>
+
+Variable Limits:
+<{ for( $n = $start; $n <= $end; $n++ ) }>
+    <p>Number: <{ $n }></p>
+<{ endfor }>
+
+Nested For Loops:
+<{ for( $x = 1; $x <= 2; $x++ ) }>
+    <div>Outer: <{ $x }>
+        <{ for( $y = 1; $y <= 2; $y++ ) }>
+            <span>Inner: <{ $y }></span>
+        <{ endfor }>
+    </div>
+<{ endfor }>
