@@ -124,6 +124,43 @@ $result = $templex->render('my-template.stub', $data);
 echo $result;
 ```
 
+## Loop Metadata
+
+Both `foreach` and `for` loops expose metadata variables inside the loop body:
+
+| Variable | Description |
+|---|---|
+| `$loop_index` | Zero-based iteration index (0, 1, 2, ...) |
+| `$loop_count` | Total number of iterations |
+| `$loop_first` | `true` on the first iteration |
+| `$loop_last` | `true` on the last iteration |
+
+### Adding Separators
+
+```text
+<{ foreach( $tags as $tag ) }>
+    <{ $tag }><{ if( $loop_last ) }><{ else }>, <{ endif }>
+<{ endforeach }>
+```
+
+### First and Last Styling
+
+```text
+<ul>
+    <{ foreach( $items as $item ) }>
+        <li<{ if( $loop_first ) }> class="first"<{ endif }><{ if( $loop_last ) }> class="last"<{ endif }>><{ $item }></li>
+    <{ endforeach }>
+</ul>
+```
+
+### Showing Item Position
+
+```text
+<{ foreach( $steps as $step ) }>
+    Step <{ $loop_index }> of <{ $loop_count }>: <{ $step }>
+<{ endforeach }>
+```
+
 ## Notes
 
 - When no key is specified (`$array as $value`), only the value is available in the loop body

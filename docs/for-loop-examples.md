@@ -121,6 +121,37 @@ The for loop feature allows you to create iterative logic with initialization, c
 - **Variables**: `$i = $start`, `$i <= $end`
 - **Expressions**: Any valid numeric expression
 
+## Loop Metadata
+
+For loops expose metadata variables inside the loop body:
+
+| Variable | Description |
+|---|---|
+| `$loop_index` | Zero-based iteration index (0, 1, 2, ...) |
+| `$loop_count` | Total number of iterations |
+| `$loop_first` | `true` on the first iteration |
+| `$loop_last` | `true` on the last iteration |
+
+Note that `$loop_index` is the iteration count (starting from 0), while the loop variable (e.g. `$i`) holds the actual value which may differ when using step increments.
+
+### Highlighting First and Last Rows
+
+```text
+<{ for( $i = 1; $i <= $totalRows; $i++ ) }>
+    <tr<{ if( $loop_first ) }> class="first"<{ endif }><{ if( $loop_last ) }> class="last"<{ endif }>>
+        <td>Row <{ $i }></td>
+    </tr>
+<{ endfor }>
+```
+
+### Showing Progress
+
+```text
+<{ for( $i = 0; $i < $steps; $i++ ) }>
+    Processing step <{ $loop_index }> of <{ $loop_count }>...
+<{ endfor }>
+```
+
 ## Advanced Examples
 
 ### Creating Pagination

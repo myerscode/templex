@@ -159,4 +159,97 @@ class ControlSlotForeachTest extends TestCase
         $this->assertStringContainsString('lang: en', $result);
         $this->assertStringContainsString('debug: true', $result);
     }
+
+    public function testForeachLoopIndex(): void
+    {
+        $raw = '
+        <{ foreach( $items as $item ) }>
+            <{ $loop_index }>:<{ $item }>
+        <{ endforeach }>
+        ';
+
+        $data = ['items' => ['a', 'b', 'c']];
+        $result = $this->render->compile($this->rawStub($raw), new Properties($data));
+
+        $this->assertStringContainsString('0:a', $result);
+        $this->assertStringContainsString('1:b', $result);
+        $this->assertStringContainsString('2:c', $result);
+    }
+
+    public function testForeachLoopCount(): void
+    {
+        $raw = '
+        <{ foreach( $items as $item ) }>
+            <{ $item }> of <{ $loop_count }>
+        <{ endforeach }>
+        ';
+
+        $data = ['items' => ['x', 'y', 'z']];
+        $result = $this->render->compile($this->rawStub($raw), new Properties($data));
+
+        $this->assertStringContainsString('x of 3', $result);
+        $this->assertStringContainsString('y of 3', $result);
+        $this->assertStringContainsString('z of 3', $result);
+    }
+
+    public function testForeachLoopFirst(): void
+    {
+        $raw = '
+        <{ foreach( $items as $item ) }>
+            <{ if( $loop_first ) }>first:<{ endif }><{ $item }>
+        <{ endforeach }>
+        ';
+
+        $data = ['items' => ['a', 'b', 'c']];
+        $result = $this->render->compile($this->rawStub($raw), new Properties($data));
+
+        $this->assertStringContainsString('first:a', $result);
+        $this->assertStringNotContainsString('first:b', $result);
+        $this->assertStringNotContainsString('first:c', $result);
+    }
+
+    public function testForeachLoopLast(): void
+    {
+        $raw = '
+        <{ foreach( $items as $item ) }>
+            <{ $item }><{ if( $loop_last ) }>:last<{ endif }>
+        <{ endforeach }>
+        ';
+
+        $data = ['items' => ['a', 'b', 'c']];
+        $result = $this->render->compile($this->rawStub($raw), new Properties($data));
+
+        $this->assertStringNotContainsString('a:last', $result);
+        $this->assertStringNotContainsString('b:last', $result);
+        $this->assertStringContainsString('c:last', $result);
+    }
+
+    public function testForeachLoopMetadataWithSingleItem(): void
+    {
+        $raw = '
+        <{ foreach( $items as $item ) }>
+            <{ $loop_index }>-<{ $loop_count }>-<{ $loop_first }>-<{ $loop_last }>
+        <{ endforeach }>
+        ';
+
+        $data = ['items' => ['only']];
+        $result = $this->render->compile($this->rawStub($raw), new Properties($data));
+
+        $this->assertStringContainsString('0-1-1-1', $result);
+    }
+
+    public function testForeachLoopMetadataWithKeyValue(): void
+    {
+        $raw = '
+        <{ foreach( $data as $k => $v ) }>
+            <{ $loop_index }>:<{ $k }>=<{ $v }>
+        <{ endforeach }>
+        ';
+
+        $data = ['data' => ['name' => 'Fred', 'role' => 'dev']];
+        $result = $this->render->compile($this->rawStub($raw), new Properties($data));
+
+        $this->assertStringContainsString('0:name=Fred', $result);
+        $this->assertStringContainsString('1:role=dev', $result);
+    }
 }

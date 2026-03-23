@@ -124,7 +124,7 @@ Key-value iteration is also supported using `$key => $value` syntax:
 </dl>
 ```
 
-The loop variables are scoped to the loop body and have access to all parent variables. For more examples including nested loops and key-value patterns, see the [Foreach Examples](foreach-examples.md).
+The loop variables are scoped to the loop body and have access to all parent variables. [Loop metadata](#loop-metadata) variables (`$loop_index`, `$loop_first`, `$loop_last`, `$loop_count`) are also available. For more examples including nested loops and key-value patterns, see the [Foreach Examples](foreach-examples.md).
 
 ---
 
@@ -156,6 +156,34 @@ Variables can be used for dynamic bounds:
 `<`, `<=`, `>`, `>=`, `==`, `===`, `!=`, `!==`
 
 For more examples including nested loops, tables, and pagination patterns, see the [For Loop Examples](for-loop-examples.md).
+
+---
+
+## Loop Metadata
+
+Both `foreach` and `for` loops expose metadata variables inside the loop body:
+
+| Variable | Description |
+|---|---|
+| `$loop_index` | Zero-based iteration index (0, 1, 2, ...) |
+| `$loop_count` | Total number of iterations |
+| `$loop_first` | `true` on the first iteration |
+| `$loop_last` | `true` on the last iteration |
+
+```text
+<{ foreach( $items as $item ) }>
+    <{ if( $loop_first ) }>First: <{ endif }><{ $item }>
+    <{ if( $loop_last ) }> (last of <{ $loop_count }>)<{ endif }>
+<{ endforeach }>
+```
+
+These work identically in `for` loops:
+
+```text
+<{ for( $i = 0; $i < 5; $i++ ) }>
+    <{ $loop_index }>: <{ $i }><{ if( $loop_last ) }> [done]<{ endif }>
+<{ endfor }>
+```
 
 ---
 

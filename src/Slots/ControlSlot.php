@@ -163,11 +163,20 @@ class ControlSlot extends Slot
             function (array $matches) use ($variables): string {
                 $output = '';
                 $hasKey = !empty($matches['key']);
+                $items = $variables->resolveValue($matches);
+                $count = is_countable($items) ? count($items) : 0;
+                $index = 0;
 
-                foreach ($variables->resolveValue($matches) as $key => $value) {
+                foreach ($items as $key => $value) {
                     $scope = array_merge(
                         $variables->variables(),
-                        [$matches['value'] => $value],
+                        [
+                            $matches['value'] => $value,
+                            'loop_index' => $index,
+                            'loop_count' => $count,
+                            'loop_first' => $index === 0,
+                            'loop_last' => $index === $count - 1,
+                        ],
                     );
 
                     if ($hasKey) {
@@ -176,6 +185,7 @@ class ControlSlot extends Slot
 
                     $template = $this->processIndexes($matches['body'], new Properties($scope));
                     $output .= new VariableSlot($this->engine)->process($template, new Properties($scope));
+                    $index++;
                 }
 
                 // this removes trailing space and breaks into a new line, left over from the placeholder closer
@@ -446,18 +456,34 @@ class ControlSlot extends Slot
 
                 $output = '';
                 $currentValue = $startValue;
+                $index = 0;
+
+                // Pre-calculate count for loop metadata
+                $countValue = $startValue;
+                $count = 0;
+                while ($this->evaluateForCondition($countValue, $operator, $endValue)) {
+                    $count++;
+                    $countValue = $this->applyForIncrement($countValue, $incrementType, $incrementValue);
+                }
 
                 // Execute the for loop
                 while ($this->evaluateForCondition($currentValue, $operator, $endValue)) {
                     $scope = array_merge(
                         $variables->variables(),
-                        [$loopVar => $currentValue],
+                        [
+                            $loopVar => $currentValue,
+                            'loop_index' => $index,
+                            'loop_count' => $count,
+                            'loop_first' => $index === 0,
+                            'loop_last' => $index === $count - 1,
+                        ],
                     );
                     $processedBody = $this->processIndexes($body, new Properties($scope));
                     $output .= new VariableSlot($this->engine)->process($processedBody, new Properties($scope));
 
                     // Apply increment
                     $currentValue = $this->applyForIncrement($currentValue, $incrementType, $incrementValue);
+                    $index++;
                 }
 
                 return trim($output);
