@@ -4,11 +4,10 @@ namespace Myerscode\Templex;
 
 use Myerscode\Templex\Exceptions\VariableNotFoundException;
 
-class Properties
+readonly class Properties
 {
     public function __construct(protected array $variables)
     {
-        //
     }
 
     /**

@@ -13,8 +13,6 @@ use Symfony\Component\Finder\SplFileInfo;
 
 class StubManager
 {
-
-
     protected array $defaultSlots = [
         IncludeSlot::class,
         ControlSlot::class,
@@ -32,8 +30,6 @@ class StubManager
      * @var StubInterface[]
      */
     protected array $cached = [];
-
-    protected array $templates = [];
 
 
     public function __construct(protected string $templateDirectory, string $templateExtensions = 'stub,template')
@@ -79,7 +75,6 @@ class StubManager
 
     public function clearTemplateCache(): void
     {
-        unset($this->cached);
         $this->cached = [];
     }
 

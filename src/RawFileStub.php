@@ -4,11 +4,12 @@ namespace Myerscode\Templex;
 
 use Myerscode\Templex\Stub\StubInterface;
 
-class RawFileStub implements StubInterface
+readonly class RawFileStub implements StubInterface
 {
-    public function __construct(protected string $name, protected string $rawContent = '')
-    {
-        //
+    public function __construct(
+        protected string $name,
+        protected string $rawContent = '',
+    ) {
     }
 
     public function name(): string
