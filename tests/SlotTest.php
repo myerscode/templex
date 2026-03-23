@@ -2,7 +2,6 @@
 
 namespace Tests;
 
-use Myerscode\Templex\Slots\ConditionSlot;
 use Myerscode\Templex\Slots\ControlSlot;
 
 class SlotTest extends TestCase

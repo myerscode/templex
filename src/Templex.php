@@ -3,14 +3,8 @@
 namespace Myerscode\Templex;
 
 use Myerscode\Templex\Exceptions\TemplateNotFoundException;
-use Myerscode\Templex\Slots\ControlSlot;
-use Myerscode\Templex\Slots\IncludeSlot;
 use Myerscode\Templex\Slots\SlotInterface;
-use Myerscode\Templex\Slots\VariableSlot;
 use Myerscode\Templex\Stub\StubInterface;
-use Myerscode\Utilities\Files\Utility as FileService;
-use Myerscode\Utilities\Strings\Utility as StringService;
-use SplFileInfo;
 
 class Templex
 {
@@ -37,7 +31,7 @@ class Templex
     {
         foreach ($this->stubManager->slots() as $slotClass) {
             if (class_exists($slotClass) && is_subclass_of($slotClass, SlotInterface::class, true)) {
-                $template = (new $slotClass($this->stubManager))->process($template, $properties);
+                $template = new $slotClass($this->stubManager)->process($template, $properties);
             }
         }
 

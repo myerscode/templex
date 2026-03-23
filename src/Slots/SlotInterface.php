@@ -3,7 +3,6 @@
 namespace Myerscode\Templex\Slots;
 
 use Myerscode\Templex\Properties;
-use Myerscode\Templex\Templex;
 
 interface SlotInterface
 {

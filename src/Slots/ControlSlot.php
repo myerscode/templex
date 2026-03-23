@@ -51,7 +51,7 @@ class ControlSlot extends Slot
                 );
             }
 
-            if (in_array($matches['structure'], ['case', 'default'])) {
+            if (in_array($matches['structure'], ['case', 'default'], true)) {
                 return sprintf(
                     '%s-%s-%s',
                     $matches[0],
@@ -167,7 +167,7 @@ class ControlSlot extends Slot
                         [$matches['value'] => $value]
                     );
                     $template = $this->processIndexes($matches['body'], new Properties($scope));
-                    $output .= (new VariableSlot($this->engine))->process($template, new Properties($scope));
+                    $output .= new VariableSlot($this->engine)->process($template, new Properties($scope));
                 }
 
                 // this removes trailing space and breaks into a new line, left over from the placeholder closer
@@ -227,7 +227,7 @@ class ControlSlot extends Slot
             $template,
         );
 
-        return (new VariableSlot($this->engine))->process($template, $variables);
+        return new VariableSlot($this->engine)->process($template, $variables);
     }
 
     protected function resolveSwitch(string $index, string $template, Properties $variables): string
@@ -269,14 +269,14 @@ class ControlSlot extends Slot
                 // Find matching case or default
                 foreach ($cases as $case) {
                     if ($case['type'] === 'case' && $this->compareSwitchValues($switchValue, $case['value'], $variables)) {
-                        return trim($case['body']);
+                        return trim((string) $case['body']);
                     }
                 }
 
                 // If no case matched, look for default
                 foreach ($cases as $case) {
                     if ($case['type'] === 'default') {
-                        return trim($case['body']);
+                        return trim((string) $case['body']);
                     }
                 }
 
@@ -286,7 +286,7 @@ class ControlSlot extends Slot
             $template,
         );
 
-        return (new VariableSlot($this->engine))->process($template, $variables);
+        return new VariableSlot($this->engine)->process($template, $variables);
     }
 
     protected function resolveSwitchValue(string $variable, Properties $variables): mixed
@@ -310,6 +310,7 @@ class ControlSlot extends Slot
         if (strtolower($variable) === 'true') {
             return true;
         }
+
         if (strtolower($variable) === 'false') {
             return false;
         }
@@ -442,7 +443,7 @@ class ControlSlot extends Slot
                         [$loopVar => $currentValue]
                     );
                     $processedBody = $this->processIndexes($body, new Properties($scope));
-                    $output .= (new VariableSlot($this->engine))->process($processedBody, new Properties($scope));
+                    $output .= new VariableSlot($this->engine)->process($processedBody, new Properties($scope));
 
                     // Apply increment
                     $currentValue = $this->applyForIncrement($currentValue, $incrementType, $incrementValue);
@@ -463,7 +464,7 @@ class ControlSlot extends Slot
             return ['variable' => $variable, 'value' => $value];
         }
 
-        throw new \Exception("Invalid for loop initialization: {$init}");
+        throw new Exception('Invalid for loop initialization: ' . $init);
     }
 
     protected function parseForCondition(string $condition): array
@@ -475,7 +476,7 @@ class ControlSlot extends Slot
             return ['operator' => $operator, 'value' => $value];
         }
 
-        throw new \Exception("Invalid for loop condition: {$condition}");
+        throw new Exception('Invalid for loop condition: ' . $condition);
     }
 
     protected function parseForIncrement(string $increment): array
@@ -484,17 +485,20 @@ class ControlSlot extends Slot
         if (preg_match('/^\$\w+\+\+$/', $increment)) {
             return ['type' => '++', 'value' => 1];
         }
+
         if (preg_match('/^\$\w+--$/', $increment)) {
             return ['type' => '--', 'value' => 1];
         }
+
         if (preg_match('/^\$\w+\s*\+=\s*(.+)$/', $increment, $matches)) {
             return ['type' => '+=', 'value' => (int)trim($matches[1])];
         }
+
         if (preg_match('/^\$\w+\s*-=\s*(.+)$/', $increment, $matches)) {
             return ['type' => '-=', 'value' => (int)trim($matches[1])];
         }
 
-        throw new \Exception("Invalid for loop increment: {$increment}");
+        throw new Exception('Invalid for loop increment: ' . $increment);
     }
 
     protected function resolveForValue(string $value, Properties $variables): mixed
@@ -518,6 +522,7 @@ class ControlSlot extends Slot
         if (strtolower($value) === 'true') {
             return true;
         }
+
         if (strtolower($value) === 'false') {
             return false;
         }
@@ -537,7 +542,7 @@ class ControlSlot extends Slot
             '===' => $currentValue === $endValue,
             '!=' => $currentValue != $endValue,
             '!==' => $currentValue !== $endValue,
-            default => throw new \Exception("Unknown for loop operator: {$operator}"),
+            default => throw new Exception('Unknown for loop operator: ' . $operator),
         };
     }
 
@@ -548,7 +553,7 @@ class ControlSlot extends Slot
             '--' => $currentValue - 1,
             '+=' => $currentValue + $incrementValue,
             '-=' => $currentValue - $incrementValue,
-            default => throw new \Exception("Unknown increment type: {$incrementType}"),
+            default => throw new Exception('Unknown increment type: ' . $incrementType),
         };
     }
 
@@ -582,7 +587,7 @@ class ControlSlot extends Slot
                 switch ($conditionType) {
                     case 'self':
                         $value = $variables->resolveValue(['variable' => $matches['variable']]);
-                        if (!in_array(mb_strtolower($value), ['true', 'false', '0', '1']) && !empty($value)) {
+                        if (!in_array(mb_strtolower((string) $value), ['true', 'false', '0', '1'], true) && !empty($value)) {
                             return true;
                         }
 
@@ -598,7 +603,7 @@ class ControlSlot extends Slot
         throw new UnmatchedComparisonException(sprintf('Unable to resolve condition "%s"', $condition));
     }
 
-    protected function resolveComparison($matches, Properties $variables): bool
+    protected function resolveComparison(array $matches, Properties $variables): bool
     {
 
         $firstIsLiteral = isset($matches['first_is_literal']);

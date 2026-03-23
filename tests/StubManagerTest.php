@@ -2,8 +2,6 @@
 
 namespace Tests;
 
-use Myerscode\Templex\Templex;
-
 class StubManagerTest extends TestCase
 {
     public function testLoadsTemplates(): void
