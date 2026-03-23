@@ -3,14 +3,13 @@
 namespace Myerscode\Templex\Slots;
 
 use Exception;
-use Myerscode\Templex\Exceptions\VariableNotFoundException;
 use Myerscode\Templex\Exceptions\UnmatchedComparisonException;
+use Myerscode\Templex\Exceptions\VariableNotFoundException;
 use Myerscode\Templex\Properties;
 use Myerscode\Templex\Templex;
 
 class ControlSlot extends Slot
 {
-
     protected int $depthCounter = 0;
 
     protected array $levelCounter = [];
@@ -40,63 +39,66 @@ class ControlSlot extends Slot
         $lastIf = [];
         $lastSwitch = [];
 
-        return preg_replace_callback(implode('', $controlStructureRegexParts), function (array $matches) use (&$lastIf, &$lastSwitch): string {
+        return preg_replace_callback(
+            implode('', $controlStructureRegexParts),
+            function (array $matches) use (&$lastIf, &$lastSwitch): string {
 
-            if ($matches['structure'] === 'else') {
+                if ($matches['structure'] === 'else') {
+                    return sprintf(
+                        '%s-%s-%s',
+                        $matches[0],
+                        array_pop($lastIf),
+                        ($this->depthCounter - 1),
+                    );
+                }
+
+                if (in_array($matches['structure'], ['case', 'default'], true)) {
+                    return sprintf(
+                        '%s-%s-%s',
+                        $matches[0],
+                        end($lastSwitch),
+                        ($this->depthCounter - 1),
+                    );
+                }
+
+                $this->levelCounter[$this->depthCounter] ??= 0;
+
+                $isEndTag = str_starts_with($matches['structure'], 'end');
+
+                if ($isEndTag) {
+                    $this->depthCounter--;
+                } else {
+                    $this->levelCounter[$this->depthCounter]++;
+                }
+
+                $level = ($this->depthCounter > 0) ? $this->levelCounter[$this->depthCounter] + 1 : $this->levelCounter[$this->depthCounter];
+
+                $depth = $isEndTag ? $this->depthCounter : $this->depthCounter++;
+
+                // take note of the level if the if is on, so can reference when a else is found
+                if ($matches['structure'] === 'if') {
+                    $lastIf[] = $level;
+                }
+
+                // take note of the level if the switch is on, so can reference when case/default is found
+                if ($matches['structure'] === 'switch') {
+                    $lastSwitch[] = $level;
+                }
+
+                // remove the switch level when endswitch is found
+                if ($matches['structure'] === 'endswitch') {
+                    array_pop($lastSwitch);
+                }
+
                 return sprintf(
                     '%s-%s-%s',
                     $matches[0],
-                    array_pop($lastIf),
-                    ($this->depthCounter - 1)
+                    $level,
+                    $depth,
                 );
-            }
-
-            if (in_array($matches['structure'], ['case', 'default'], true)) {
-                return sprintf(
-                    '%s-%s-%s',
-                    $matches[0],
-                    end($lastSwitch),
-                    ($this->depthCounter - 1)
-                );
-            }
-
-            $this->levelCounter[$this->depthCounter] ??= 0;
-
-            $isEndTag = str_starts_with($matches['structure'], 'end');
-
-            if ($isEndTag) {
-                $this->depthCounter--;
-            } else {
-                $this->levelCounter[$this->depthCounter]++;
-            }
-
-            $level = ($this->depthCounter > 0) ? $this->levelCounter[$this->depthCounter] + 1 : $this->levelCounter[$this->depthCounter];
-
-            $depth = $isEndTag ? $this->depthCounter : $this->depthCounter++;
-
-            // take note of the level if the if is on, so can reference when a else is found
-            if ($matches['structure'] === 'if') {
-                $lastIf[] = $level;
-            }
-
-            // take note of the level if the switch is on, so can reference when case/default is found
-            if ($matches['structure'] === 'switch') {
-                $lastSwitch[] = $level;
-            }
-
-            // remove the switch level when endswitch is found
-            if ($matches['structure'] === 'endswitch') {
-                array_pop($lastSwitch);
-            }
-
-            return sprintf(
-                '%s-%s-%s',
-                $matches[0],
-                $level,
-                $depth
-            );
-        },
-            $template);
+            },
+            $template,
+        );
     }
 
     protected function processIndexes(string $template, Properties $variables): string
@@ -164,7 +166,7 @@ class ControlSlot extends Slot
                 foreach ($variables->resolveValue($matches) as $value) {
                     $scope = array_merge(
                         $variables->variables(),
-                        [$matches['value'] => $value]
+                        [$matches['value'] => $value],
                     );
                     $template = $this->processIndexes($matches['body'], new Properties($scope));
                     $output .= new VariableSlot($this->engine)->process($template, new Properties($scope));
@@ -173,7 +175,7 @@ class ControlSlot extends Slot
                 // this removes trailing space and breaks into a new line, left over from the placeholder closer
                 return trim($output);
             },
-            $template
+            $template,
         );
     }
 
@@ -322,7 +324,7 @@ class ControlSlot extends Slot
     protected function parseSwitchCases(string $body, string $index): array
     {
         $cases = [];
-        
+
         // Regex to find case statements
         $caseRegex = [
             '/',
@@ -345,12 +347,12 @@ class ControlSlot extends Slot
 
         // Find all case statements
         preg_match_all(implode('', $caseRegex), $body, $caseMatches, PREG_SET_ORDER);
-        
+
         foreach ($caseMatches as $match) {
             $cases[] = [
                 'type' => 'case',
                 'value' => trim($match['value']),
-                'body' => $match['body']
+                'body' => $match['body'],
             ];
         }
 
@@ -373,7 +375,7 @@ class ControlSlot extends Slot
             $cases[] = [
                 'type' => 'default',
                 'value' => null,
-                'body' => $defaultMatch['body']
+                'body' => $defaultMatch['body'],
             ];
         }
 
@@ -440,7 +442,7 @@ class ControlSlot extends Slot
                 while ($this->evaluateForCondition($currentValue, $operator, $endValue)) {
                     $scope = array_merge(
                         $variables->variables(),
-                        [$loopVar => $currentValue]
+                        [$loopVar => $currentValue],
                     );
                     $processedBody = $this->processIndexes($body, new Properties($scope));
                     $output .= new VariableSlot($this->engine)->process($processedBody, new Properties($scope));
@@ -451,7 +453,7 @@ class ControlSlot extends Slot
 
                 return trim($output);
             },
-            $template
+            $template,
         );
     }
 

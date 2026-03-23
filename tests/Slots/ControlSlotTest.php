@@ -116,31 +116,31 @@ class ControlSlotTest extends TestCase
 
     public function testHandlesBoolComparison(): void
     {
-        $raw = "
+        $raw = '
         <{ if( true ) }>
             pass
         <{ else }>
             fail
         <{ endif }>
-        ";
+        ';
 
-        $expected = "
+        $expected = '
         pass
-        ";
+        ';
         $result = $this->render->compile($this->rawStub($raw), new Properties([]));
         $this->assertEquals($expected, $result);
 
-        $raw = "
+        $raw = '
         <{ if( false ) }>
             pass
         <{ else }>
             fail
         <{ endif }>
-        ";
+        ';
 
-        $expected = "
+        $expected = '
         fail
-        ";
+        ';
         $result = $this->render->compile($this->rawStub($raw), new Properties([]));
         $this->assertEquals($expected, $result);
     }

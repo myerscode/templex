@@ -35,7 +35,7 @@ class StubTest extends TestCase
 
         $properties = new Stub($name, $path);
         $this->expectException(TemplateNotFoundException::class);
-        $this->expectExceptionMessage("Template not-a-stub not found");
+        $this->expectExceptionMessage('Template not-a-stub not found');
 
         $properties->content();
     }

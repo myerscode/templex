@@ -129,7 +129,7 @@ class ControlSlotSwitchTest extends TestCase
         $data = [
             'userRole' => 'admin',
             'adminRole' => 'admin',
-            'moderatorRole' => 'moderator'
+            'moderatorRole' => 'moderator',
         ];
         $result = $this->render->compile($this->rawStub($raw), new Properties($data));
         $this->assertStringContainsString('Admin Access', $result);
@@ -137,7 +137,7 @@ class ControlSlotSwitchTest extends TestCase
         $data = [
             'userRole' => 'moderator',
             'adminRole' => 'admin',
-            'moderatorRole' => 'moderator'
+            'moderatorRole' => 'moderator',
         ];
         $result = $this->render->compile($this->rawStub($raw), new Properties($data));
         $this->assertStringContainsString('Moderator Access', $result);
@@ -172,14 +172,14 @@ class ControlSlotSwitchTest extends TestCase
 
         $data = [
             'category' => 'electronics',
-            'subcategory' => 'phones'
+            'subcategory' => 'phones',
         ];
         $result = $this->render->compile($this->rawStub($raw), new Properties($data));
         $this->assertStringContainsString('Mobile Phones', $result);
 
         $data = [
             'category' => 'books',
-            'subcategory' => 'fiction'
+            'subcategory' => 'fiction',
         ];
         $result = $this->render->compile($this->rawStub($raw), new Properties($data));
         $this->assertStringContainsString('Fiction Books', $result);
@@ -195,7 +195,7 @@ class ControlSlotSwitchTest extends TestCase
             'subcategory' => 'software',
             'userType' => 'admin',
             'adminType' => 'admin',
-            'guestType' => 'guest'
+            'guestType' => 'guest',
         ];
 
         $result = $this->render->render('switch-comprehensive.stub', $data);

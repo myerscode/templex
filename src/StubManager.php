@@ -45,9 +45,9 @@ class StubManager
     {
         $extensions = is_string($templateExtensions) ? explode(',', $templateExtensions) : $templateExtensions;
 
-        $extensions = array_filter($extensions, fn($value): bool => is_string($value) && $value !== '');
+        $extensions = array_filter($extensions, fn ($value): bool => is_string($value) && $value !== '');
 
-        $this->templateExtensions = array_unique(array_map(fn($extension): string => new StringService($extension)->trim(",. \t\n\r\0\x0B")->value(), $extensions));
+        $this->templateExtensions = array_unique(array_map(fn ($extension): string => new StringService($extension)->trim(",. \t\n\r\0\x0B")->value(), $extensions));
     }
 
     public function fetchTemplates(): void
@@ -64,8 +64,8 @@ class StubManager
         $fileService = new FileService($this->templateDirectory);
 
         $templateList = array_map(
-            fn(SplFileInfo $file): Stub => new Stub($this->makeTemplateName($file->getRealPath()), $file->getRealPath()),
-            $fileService->files()
+            fn (SplFileInfo $file): Stub => new Stub($this->makeTemplateName($file->getRealPath()), $file->getRealPath()),
+            $fileService->files(),
         );
 
         foreach ($templateList as $template) {

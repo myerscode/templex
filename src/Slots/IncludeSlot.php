@@ -31,7 +31,7 @@ class IncludeSlot extends Slot
 
                 throw new TemplateNotFoundException(sprintf('Could not include %s, as template not found', $include));
             },
-            $template
+            $template,
         );
     }
 }
