@@ -52,6 +52,7 @@
     "tests": "vendor/bin/phpunit --testdox --no-coverage --colors=always",
     "test-coverage": "XDEBUG_MODE=coverage vendor/bin/phpunit --testdox --colors=always",
     "lint": "vendor/bin/pint",
-    "lint-check": "vendor/bin/pint --test"
+    "lint-check": "vendor/bin/pint --test",
+    "analyse": "vendor/bin/phpstan analyse"
   }
 }

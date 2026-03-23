@@ -5,6 +5,7 @@ namespace Myerscode\Templex;
 use Myerscode\Templex\Exceptions\TemplateNotFoundException;
 use Myerscode\Templex\Slots\ControlSlot;
 use Myerscode\Templex\Slots\IncludeSlot;
+use Myerscode\Templex\Slots\SlotInterface;
 use Myerscode\Templex\Slots\VariableSlot;
 use Myerscode\Templex\Stub\StubInterface;
 use Myerscode\Utilities\Files\Utility as FileService;
@@ -13,6 +14,7 @@ use Symfony\Component\Finder\SplFileInfo;
 
 class StubManager
 {
+    /** @var array<int, class-string<SlotInterface>> */
     protected array $defaultSlots = [
         IncludeSlot::class,
         ControlSlot::class,
@@ -24,10 +26,11 @@ class StubManager
      */
     protected array $templateExtensions = [];
 
+    /** @var array<int, class-string<SlotInterface>> */
     protected array $slots = [];
 
     /**
-     * @var StubInterface[]
+     * @var array<string, StubInterface|string>
      */
     protected array $cached = [];
 
@@ -41,6 +44,9 @@ class StubManager
         $this->fetchTemplates();
     }
 
+    /**
+     * @param array<int, mixed>|string $templateExtensions
+     */
     public function setTemplateExtensions(array|string $templateExtensions): void
     {
         $extensions = is_string($templateExtensions) ? explode(',', $templateExtensions) : $templateExtensions;
@@ -149,13 +155,16 @@ class StubManager
             ->value();
     }
 
+    /**
+     * @return array<int, class-string<SlotInterface>>
+     */
     public function slots(): array
     {
         return $this->slots;
     }
 
     /**
-     * @return Stub[]
+     * @return array<string, StubInterface|string>
      */
     public function templates(): array
     {
@@ -170,6 +179,9 @@ class StubManager
         return $this->templateExtensions;
     }
 
+    /**
+     * @param array<int, class-string<SlotInterface>> $slots
+     */
     public function setSlots(array $slots): void
     {
         $this->slots = $slots;

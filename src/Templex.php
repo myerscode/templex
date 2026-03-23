@@ -39,6 +39,8 @@ class Templex
     }
 
     /**
+     * @param array<string, mixed> $variables
+     *
      * @throws TemplateNotFoundException
      */
     public function render(string $templateName, array $variables = []): string
@@ -50,6 +52,9 @@ class Templex
         return $this->compile($stub, $properties);
     }
 
+    /**
+     * @param array<int, class-string> $slots
+     */
     public function setSlots(array $slots): void
     {
         $this->stubManager->setSlots($slots);

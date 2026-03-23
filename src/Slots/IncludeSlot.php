@@ -23,7 +23,7 @@ class IncludeSlot extends Slot
 
         return (string) preg_replace_callback(
             implode('', $regex),
-            function (array $matches) use ($variables): string {
+            function (array $matches): string {
                 $include = $matches[1];
                 if ($this->engine->isTemplate($include)) {
                     return $this->engine->getTemplate($include);

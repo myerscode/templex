@@ -12,6 +12,7 @@ class ControlSlot extends Slot
 {
     protected int $depthCounter = 0;
 
+    /** @var array<int, int> */
     protected array $levelCounter = [];
 
     public function process(string $template, Properties $variables): string
@@ -39,7 +40,7 @@ class ControlSlot extends Slot
         $lastIf = [];
         $lastSwitch = [];
 
-        return preg_replace_callback(
+        return (string) preg_replace_callback(
             implode('', $controlStructureRegexParts),
             function (array $matches) use (&$lastIf, &$lastSwitch): string {
 
@@ -125,16 +126,13 @@ class ControlSlot extends Slot
 
     protected function resolveControl(string $control, string $index, string $template, Properties $variables): string
     {
-        switch ($control) {
-            case 'foreach':
-                return $this->resolveForEach($index, $template, $variables);
-            case 'if':
-                return $this->resolveIfStatement($index, $template, $variables);
-            case 'switch':
-                return $this->resolveSwitch($index, $template, $variables);
-            case 'for':
-                return $this->resolveFor($index, $template, $variables);
-        }
+        return match ($control) {
+            'foreach' => $this->resolveForEach($index, $template, $variables),
+            'if' => $this->resolveIfStatement($index, $template, $variables),
+            'switch' => $this->resolveSwitch($index, $template, $variables),
+            'for' => $this->resolveFor($index, $template, $variables),
+            default => throw new Exception('Unknown control structure: ' . $control),
+        };
     }
 
     protected function resolveForEach(string $index, string $template, Properties $variables): string
@@ -159,7 +157,7 @@ class ControlSlot extends Slot
             '/si',
         ];
 
-        return preg_replace_callback(
+        return (string) preg_replace_callback(
             implode('', $regexParts),
             function (array $matches) use ($variables): string {
                 $output = '';
@@ -202,7 +200,7 @@ class ControlSlot extends Slot
             '/si',
         ];
 
-        $template = preg_replace_callback(
+        $template = (string) preg_replace_callback(
             implode('', $regexParts),
             function (array $matches) use ($variables): string {
 
@@ -255,7 +253,7 @@ class ControlSlot extends Slot
             '/si',
         ];
 
-        $template = preg_replace_callback(
+        $template = (string) preg_replace_callback(
             implode('', $regexParts),
             function (array $matches) use ($variables): string {
                 $switchVariable = trim($matches['variable']);
@@ -321,6 +319,9 @@ class ControlSlot extends Slot
         return $variable;
     }
 
+    /**
+     * @return array<int, array{type: string, value: string|null, body: string}>
+     */
     protected function parseSwitchCases(string $body, string $index): array
     {
         $cases = [];
@@ -412,7 +413,7 @@ class ControlSlot extends Slot
             '/si',
         ];
 
-        return preg_replace_callback(
+        return (string) preg_replace_callback(
             implode('', $regexParts),
             function (array $matches) use ($variables): string {
                 $init = trim($matches['init']);
@@ -457,6 +458,9 @@ class ControlSlot extends Slot
         );
     }
 
+    /**
+     * @return array{variable: string, value: mixed}
+     */
     protected function parseForInit(string $init, Properties $variables): array
     {
         // Parse patterns like: $i = 0, $i = $start, $counter = 1
@@ -469,6 +473,9 @@ class ControlSlot extends Slot
         throw new Exception('Invalid for loop initialization: ' . $init);
     }
 
+    /**
+     * @return array{operator: string, value: string}
+     */
     protected function parseForCondition(string $condition): array
     {
         // Parse patterns like: $i < 10, $i <= $max, $counter > 0
@@ -481,6 +488,9 @@ class ControlSlot extends Slot
         throw new Exception('Invalid for loop condition: ' . $condition);
     }
 
+    /**
+     * @return array{type: string, value: int}
+     */
     protected function parseForIncrement(string $increment): array
     {
         // Parse patterns like: $i++, $i--, $i += 2, $i -= 1
@@ -605,9 +615,11 @@ class ControlSlot extends Slot
         throw new UnmatchedComparisonException(sprintf('Unable to resolve condition "%s"', $condition));
     }
 
+    /**
+     * @param array<int|string, string|null> $matches
+     */
     protected function resolveComparison(array $matches, Properties $variables): bool
     {
-
         $firstIsLiteral = isset($matches['first_is_literal']);
         $firstIsVar = isset($matches['first_is_variable']);
         $firstIsNumber = isset($matches['first_is_number']);
@@ -618,10 +630,13 @@ class ControlSlot extends Slot
 
         $operation = $matches['operators'];
 
+        $firstValue = null;
+        $secondValue = null;
+
         if ($firstIsVar) {
             $firstValue = $variables->resolveValue(['variable' => $matches['first_value']]);
         } elseif ($firstIsNumber) {
-            $firstValue = ($matches['first_is_number'] . $matches['first_value']) * 1;
+            $firstValue = (int) ($matches['first_is_number'] . $matches['first_value']);
         } elseif ($firstIsLiteral) {
             $firstValue = $matches['first_literal_value'];
         }
@@ -629,7 +644,7 @@ class ControlSlot extends Slot
         if ($secondIsVar) {
             $secondValue = $variables->resolveValue(['variable' => $matches['second_value']]);
         } elseif ($secondIsNumber) {
-            $secondValue = ($matches['second_is_number'] . $matches['second_value']) * 1;
+            $secondValue = (int) ($matches['second_is_number'] . $matches['second_value']);
         } elseif ($secondIsLiteral) {
             $secondValue = $matches['second_literal_value'];
         }
