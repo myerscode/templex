@@ -2,7 +2,6 @@
 
 namespace Tests\Slots;
 
-use Exception;
 use Myerscode\Templex\Properties;
 use Tests\TestCase;
 

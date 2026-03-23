@@ -5,7 +5,6 @@ namespace Tests\Slots;
 use Exception;
 use Myerscode\Templex\Properties;
 use Myerscode\Templex\Slots\ControlSlot;
-use Myerscode\Templex\Templex;
 use ReflectionMethod;
 use Tests\TestCase;
 
