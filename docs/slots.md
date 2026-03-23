@@ -196,6 +196,8 @@ Variables can be used for dynamic bounds:
 
 For more examples including nested loops, tables, and pagination patterns, see the [For Loop Examples](for-loop-examples.md).
 
+> **Why no while loop?** Templex variables are immutable within a template, so a while loop condition can never change between iterations. Use `for` loops with a counter or `foreach` loops over a collection instead.
+
 ---
 
 ## Loop Metadata
