@@ -9,10 +9,7 @@
 
 ## Why this package is helpful?
 
-This package will allow you to define stubs and then hydrate the template using PHP variables.
-As the engine uses RegEx it does not rely on using `eval` or including and running the code as PHP.
-
-This means that you are able to simply generate _*new*_ PHP (or any type of text content filled files for that matter) you need.
+Templex lets you define stubs and hydrate them using PHP variables. The engine uses regex for all processing — no `eval()`, no including and running code as PHP. This means you can safely generate new PHP files, config files, or any text-based content from templates.
 
 ## Requirements
 
@@ -20,144 +17,35 @@ This means that you are able to simply generate _*new*_ PHP (or any type of text
 
 ## Install
 
-You can install this package via composer:
 ```bash
 composer require myerscode/templex
 ```
 
-## Usage
+## Quick Start
+
 ```php
-$templateDirectory = __DIR__ . '/Resources/Templates/';
-$templateExtensions = 'stub';
-$templex = new Templex($templateDirectory, $templateExtensions);
+use Myerscode\Templex\Templex;
 
-echo $templex->render('index');
+$templex = new Templex(__DIR__ . '/templates/', 'stub');
+
+echo $templex->render('welcome', ['name' => 'Fred']);
 ```
 
-## Templates
-
-Templates can be any form of text based files. By default, Templex will look for files with `.stub` or `.template` file extensions.
-
-Templex uses `<{` and `}>` as opening and closing anchor tags to find and process `Slots`, which can be used to generate
-dynamic views from placeholders and logic.
-
-## Slots
-
-Slots are the "_magic_" of Templex. They are the isolated functionality that perform replacement and hydrating actions
-on a template to create the final rendered output.
-
-The default included slots are:
-
-* IncludeSlot - Includes another template's content
-* ControlSlot - Process flow based logic, such as foreach, for, if, and switch statements
-* VariableSlot - Replaces single placeholders
-
-## Includes
-
-To include another template, in order to create reusable stubs you can simply include it by its template name.
+Where `templates/welcome.stub` contains:
 
 ```text
-<{ include partials.header }>
+Hello <{ $name }>!
 ```
 
-## Conditions
+## Documentation
 
-Templex can process nested slots, so having nested control conditions are handled in the order they are found.
+- [Templates](docs/templates.md) — template syntax, file types, and configuration
+- [Slots](docs/slots.md) — includes, conditions, loops, switch statements, and variables
 
-Conditions can be variables, numbers, booleans or literal strings and can use the usual comparison evaluators.
+### Example Guides
 
-```text
-<{ if( $value === 'foobar' ) }>
-...
-<{ if( $value > 7 ) }>
-...
-<{ if( $value == true ) }>
-...
-<{ if( $value != false ) }>
-```
-
-Examples
-```text
-<{ if( $value === $condition ) }>
- <p>That value was true!</p>
-<{ endif }>
-
-<{ if( $value === 'foobar' ) }>
- <p>That value was true!</p>
-<{ else }>
- <p>That value was false!</p>
-<{ endif }>
-```
-
-## Foreach Loops
-
-Foreach loops will take an array variable to create multiple iterations in your template.
-
-```text
-<ul class="row">
-    <{ foreach( $users as $user ) }>
-        <li><{ $user }></li>
-    <{ endforeach }>
-</ul>
-```
-
-## For Loops
-
-For loops support standard C-style syntax with initialization, condition, and increment expressions.
-
-```text
-<{ for( $i = 0; $i < 5; $i++ ) }>
-    Item <{ $i }>
-<{ endfor }>
-```
-
-Supported operators: `<`, `<=`, `>`, `>=`, `==`, `===`, `!=`, `!==`
-
-Supported increments: `$i++`, `$i--`, `$i += 2`, `$i -= 1`
-
-Variables can be used in initialization and conditions:
-
-```text
-<{ for( $i = $start; $i <= $end; $i++ ) }>
-    Value: <{ $i }>
-<{ endfor }>
-```
-
-## Switch Statements
-
-Switch statements allow matching a variable against multiple cases.
-
-```text
-<{ switch( $role ) }>
-    <{ case( "admin" ) }>
-        Administrator access
-    <{ case( "user" ) }>
-        Standard access
-    <{ default }>
-        Guest access
-<{ endswitch }>
-```
-
-Cases can match variables, strings, numbers, and booleans:
-
-```text
-<{ switch( $level ) }>
-    <{ case( 1 ) }>
-        Level One
-    <{ case( $maxLevel ) }>
-        Max Level
-    <{ default }>
-        Unknown Level
-<{ endswitch }>
-```
-
-## Variables
-
-Variables are replaced when matching anchors are found. They can be passed in at rendering, or created via other slots such as loops.
-
-```text
-Hi <{ $name }>!
-```
+- [For Loop Examples](docs/for-loop-examples.md)
+- [Switch Statement Examples](docs/switch-examples.md)
 
 ## Issues and Contributing
 
