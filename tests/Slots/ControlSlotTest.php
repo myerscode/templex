@@ -4,6 +4,7 @@ namespace Tests\Slots;
 
 use Myerscode\Templex\Exceptions\UnmatchedComparisonException;
 use Myerscode\Templex\Properties;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class ControlSlotTest extends TestCase
@@ -38,7 +39,7 @@ class ControlSlotTest extends TestCase
         ];
     }
 
-    public static function __truthyProvider(): array
+    public static function truthyProvider(): array
     {
         return [
             'true string' => ['true'],
@@ -49,7 +50,7 @@ class ControlSlotTest extends TestCase
         ];
     }
 
-    public static function __falselyProvider(): array
+    public static function falselyProvider(): array
     {
         return [
             'true string' => ['false'],
@@ -79,9 +80,7 @@ class ControlSlotTest extends TestCase
         $this->assertEquals($this->expectedContent('condition.stub'), $result);
     }
 
-    /**
-     * @dataProvider __truthyProvider
-     */
+    #[DataProvider('truthyProvider')]
     public function testHandlesSelfTruthyComparison(string|bool|int $var): void
     {
         $raw = '
@@ -98,9 +97,7 @@ class ControlSlotTest extends TestCase
         $this->assertEquals($expected, $result);
     }
 
-    /**
-     * @dataProvider __falselyProvider
-     */
+    #[DataProvider('falselyProvider')]
     public function testHandlesSelfFalselyComparison(string|bool|int $var): void
     {
         $raw = '
@@ -148,9 +145,7 @@ class ControlSlotTest extends TestCase
         $this->assertEquals($expected, $result);
     }
 
-    /**
-     * @dataProvider operatorProvider
-     */
+    #[DataProvider('operatorProvider')]
     public function testHandlesComparisonOperators(string $operator, string|int $firstValue, string|int $secondValue, string $outcome): void
     {
         $raw = "
