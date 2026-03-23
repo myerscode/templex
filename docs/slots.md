@@ -113,7 +113,18 @@ Foreach loops iterate over an array variable:
 </ul>
 ```
 
-The loop variable is scoped to the loop body and has access to all parent variables.
+Key-value iteration is also supported using `$key => $value` syntax:
+
+```text
+<dl>
+    <{ foreach( $settings as $key => $value ) }>
+        <dt><{ $key }></dt>
+        <dd><{ $value }></dd>
+    <{ endforeach }>
+</dl>
+```
+
+The loop variables are scoped to the loop body and have access to all parent variables. For more examples including nested loops and key-value patterns, see the [Foreach Examples](foreach-examples.md).
 
 ---
 

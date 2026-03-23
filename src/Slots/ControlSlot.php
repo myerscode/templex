@@ -145,6 +145,7 @@ class ControlSlot extends Slot
             '\s*',
             '\$(?<variable>\w+)',
             '\s+as\s+',
+            '(?:\$(?<key>\w+)\s*=>\s*)?',
             '\$(?<value>\w+)',
             '\s*\)\s*',
             Templex::PLACEHOLDER_CLOSE,
@@ -161,11 +162,18 @@ class ControlSlot extends Slot
             implode('', $regexParts),
             function (array $matches) use ($variables): string {
                 $output = '';
-                foreach ($variables->resolveValue($matches) as $value) {
+                $hasKey = !empty($matches['key']);
+
+                foreach ($variables->resolveValue($matches) as $key => $value) {
                     $scope = array_merge(
                         $variables->variables(),
                         [$matches['value'] => $value],
                     );
+
+                    if ($hasKey) {
+                        $scope[$matches['key']] = $key;
+                    }
+
                     $template = $this->processIndexes($matches['body'], new Properties($scope));
                     $output .= new VariableSlot($this->engine)->process($template, new Properties($scope));
                 }
