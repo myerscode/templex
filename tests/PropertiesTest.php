@@ -20,4 +20,11 @@ class PropertiesTest extends TestCase
         $this->expectException(VariableNotFoundException::class);
         $properties->resolveValue(['variable' => 'name']);
     }
+
+    public function testPropertiesReturnsVariables(): void
+    {
+        $data = ['name' => 'Fred', 'age' => 30];
+        $properties = new Properties($data);
+        $this->assertEquals($data, $properties->variables());
+    }
 }

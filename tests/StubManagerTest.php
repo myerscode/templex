@@ -68,4 +68,10 @@ class StubManagerTest extends TestCase
         $this->assertEquals(['foo', 'bar'], $this->stubManager->templateExtensions());
     }
 
+    public function testAddsSlot(): void
+    {
+        $initialCount = count($this->stubManager->slots());
+        $this->stubManager->addSlot('App\\CustomSlot');
+        $this->assertCount($initialCount + 1, $this->stubManager->slots());
+    }
 }
