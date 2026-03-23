@@ -5,10 +5,10 @@
     "template",
     "templating",
     "php template",
-    "regex tempalte",
+    "regex template",
     "template engine"
   ],
-  "type": "project",
+  "type": "library",
   "license": "MIT",
   "authors": [
     {
