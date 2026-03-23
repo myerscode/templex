@@ -134,6 +134,40 @@ Multiple elseif branches are supported. The first matching condition wins, and t
 <{ endfor }>
 ```
 
+### Logical Operators
+
+Combine multiple conditions with `&&` (and) and `||` (or):
+
+```text
+<{ if( $isLoggedIn && $isAdmin ) }>
+    <p>Welcome, administrator.</p>
+<{ endif }>
+
+<{ if( $role === "admin" || $role === "editor" ) }>
+    <p>You can edit content.</p>
+<{ endif }>
+```
+
+Chain three or more conditions:
+
+```text
+<{ if( $a && $b && $c ) }>
+    All three are truthy
+<{ endif }>
+```
+
+Logical operators work with comparisons, self-evaluation, and inside elseif branches:
+
+```text
+<{ if( $role === "admin" ) }>
+    Admin
+<{ elseif( $role === "editor" || $role === "author" ) }>
+    Writer
+<{ else }>
+    Guest
+<{ endif }>
+```
+
 ## Supported Operators
 
 | Operator | Description |
@@ -146,6 +180,8 @@ Multiple elseif branches are supported. The first matching condition wins, and t
 | `<`      | Less than |
 | `>=`     | Greater than or equal |
 | `<=`     | Less than or equal |
+| `&&`     | Logical AND |
+| `\|\|`   | Logical OR |
 
 ## Supported Value Types
 

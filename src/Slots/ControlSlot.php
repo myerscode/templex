@@ -676,6 +676,28 @@ class ControlSlot extends Slot
      */
     protected function resolveCondition(string $condition, Properties $variables): bool
     {
+        // Handle logical OR (||) — split and short-circuit on first true
+        if (preg_match('/\|\|/', $condition)) {
+            $parts = preg_split('/\s*\|\|\s*/', $condition);
+            foreach ($parts as $part) {
+                if ($this->resolveCondition(trim($part), $variables)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // Handle logical AND (&&) — split and short-circuit on first false
+        if (preg_match('/&&/', $condition)) {
+            $parts = preg_split('/\s*&&\s*/', $condition);
+            foreach ($parts as $part) {
+                if (!$this->resolveCondition(trim($part), $variables)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
         $simpleComparisonRegex = [
             'self' => '/^\$(?<variable>\w+)\s?$/si',
             'boolean' => '/^(?<boolean>true|false)\s?$/si',

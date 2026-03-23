@@ -92,7 +92,7 @@ Multiple elseif branches are supported — the first matching condition wins.
 
 ### Supported Operators
 
-`==`, `===`, `!=`, `!==`, `>`, `<`, `>=`, `<=`
+`==`, `===`, `!=`, `!==`, `>`, `<`, `>=`, `<=`, `&&`, `||`
 
 ### Self-Evaluation
 
@@ -112,7 +112,21 @@ A variable on its own evaluates as truthy or falsy:
 <{ endif }>
 ```
 
-Conditions can be nested and combined with other control structures. For more examples including nested conditions and operator usage, see the [Condition Examples](condition-examples.md).
+### Logical Operators
+
+Combine conditions with `&&` (and) and `||` (or):
+
+```text
+<{ if( $isLoggedIn && $isAdmin ) }>
+    Admin panel
+<{ endif }>
+
+<{ if( $role === "admin" || $role === "editor" ) }>
+    Can edit
+<{ endif }>
+```
+
+Conditions can be nested and combined with other control structures. For more examples including nested conditions, logical operators, and operator usage, see the [Condition Examples](condition-examples.md).
 
 ---
 
