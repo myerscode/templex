@@ -15,6 +15,13 @@ class ControlSlot extends Slot
     /** @var array<int, int> */
     protected array $levelCounter = [];
 
+    protected function resolveVariables(string $template, Properties $variables): string
+    {
+        $template = new TernarySlot($this->engine)->process($template, $variables);
+
+        return new VariableSlot($this->engine)->process($template, $variables);
+    }
+
     public function process(string $template, Properties $variables): string
     {
         $indexedTemplate = $this->indexControls($template);
@@ -184,7 +191,7 @@ class ControlSlot extends Slot
                     }
 
                     $template = $this->processIndexes($matches['body'], new Properties($scope));
-                    $output .= new VariableSlot($this->engine)->process($template, new Properties($scope));
+                    $output .= $this->resolveVariables($template, new Properties($scope));
                     $index++;
                 }
 
@@ -245,7 +252,7 @@ class ControlSlot extends Slot
             $template,
         );
 
-        return new VariableSlot($this->engine)->process($template, $variables);
+        return $this->resolveVariables($template, $variables);
     }
 
     protected function resolveSwitch(string $index, string $template, Properties $variables): string
@@ -304,7 +311,7 @@ class ControlSlot extends Slot
             $template,
         );
 
-        return new VariableSlot($this->engine)->process($template, $variables);
+        return $this->resolveVariables($template, $variables);
     }
 
     protected function resolveSwitchValue(string $variable, Properties $variables): mixed
@@ -479,7 +486,7 @@ class ControlSlot extends Slot
                         ],
                     );
                     $processedBody = $this->processIndexes($body, new Properties($scope));
-                    $output .= new VariableSlot($this->engine)->process($processedBody, new Properties($scope));
+                    $output .= $this->resolveVariables($processedBody, new Properties($scope));
 
                     // Apply increment
                     $currentValue = $this->applyForIncrement($currentValue, $incrementType, $incrementValue);

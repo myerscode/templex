@@ -9,7 +9,7 @@ Templex is a lightweight, regex-based template rendering engine for PHP that all
 ## Core Concepts
 
 - [Templates](templates.md) — template syntax, file types, directories, caching, and safety
-- [Slots](slots.md) — includes, conditions, loops, switch statements, variables, and custom slots
+- [Slots](slots.md) — includes, conditions, loops, switch statements, ternary/null coalescing, variables, and custom slots
 
 ## Example Guides
 

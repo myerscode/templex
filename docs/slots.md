@@ -4,11 +4,12 @@ Slots are the core processing units of Templex. Each slot handles a specific typ
 
 ## Default Slots
 
-Templex includes three built-in slots, processed in this order:
+Templex includes four built-in slots, processed in this order:
 
 1. **IncludeSlot** — includes another template's content
 2. **ControlSlot** — processes control flow (if/else, foreach, for, switch)
-3. **VariableSlot** — replaces variable placeholders
+3. **TernarySlot** — resolves ternary and null coalescing expressions
+4. **VariableSlot** — replaces variable placeholders
 
 ## Custom Slots
 
@@ -216,3 +217,44 @@ Cases support strings, numbers, booleans, and variables. Matching uses strict co
 ```
 
 For more examples including nested switches and variable cases, see the [Switch Statement Examples](switch-examples.md).
+
+---
+
+## Ternary and Null Coalescing
+
+Inline expressions for simple conditional output without full if/else blocks.
+
+### Ternary
+
+Output different values based on a variable's truthiness:
+
+```text
+<{ $active ? "Enabled" : "Disabled" }>
+<{ $count ? "Has items" : "Empty" }>
+```
+
+Truthy: `true`, `1`, non-empty strings (except `"false"` and `"0"`).
+Falsy: `false`, `0`, `""`, `"false"`, `"0"`, or missing variables.
+
+### Null Coalescing
+
+Provide a default value when a variable doesn't exist:
+
+```text
+<{ $title ?? "Untitled" }>
+<{ $theme ?? "light" }>
+```
+
+If the variable exists, its value is used. If it doesn't exist, the default is used.
+
+### Values
+
+Both ternary and null coalescing support string literals, numbers, and variable references:
+
+```text
+<{ $name ?? $defaultName }>
+<{ $role ? $adminLabel : $guestLabel }>
+<{ $port ?? 8080 }>
+```
+
+Ternary and null coalescing work inside loops and other control structures.

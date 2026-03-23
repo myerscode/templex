@@ -6,6 +6,7 @@ use Myerscode\Templex\Exceptions\TemplateNotFoundException;
 use Myerscode\Templex\Slots\ControlSlot;
 use Myerscode\Templex\Slots\IncludeSlot;
 use Myerscode\Templex\Slots\SlotInterface;
+use Myerscode\Templex\Slots\TernarySlot;
 use Myerscode\Templex\Slots\VariableSlot;
 use Myerscode\Templex\Stub\StubInterface;
 use Myerscode\Utilities\Files\Utility as FileService;
@@ -18,6 +19,7 @@ class StubManager
     protected array $defaultSlots = [
         IncludeSlot::class,
         ControlSlot::class,
+        TernarySlot::class,
         VariableSlot::class,
     ];
 
