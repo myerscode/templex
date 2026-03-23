@@ -104,6 +104,24 @@ Conditions can be nested within other control structures:
 <{ endforeach }>
 ```
 
+### Elseif Chains
+
+Chain multiple conditions without nesting:
+
+```text
+<{ if( $status === "active" ) }>
+    <span class="green">Active</span>
+<{ elseif( $status === "pending" ) }>
+    <span class="yellow">Pending</span>
+<{ elseif( $status === "disabled" ) }>
+    <span class="red">Disabled</span>
+<{ else }>
+    <span class="grey">Unknown</span>
+<{ endif }>
+```
+
+Multiple elseif branches are supported. The first matching condition wins, and the else branch is optional.
+
 ### Conditions Inside For Loops
 
 ```text

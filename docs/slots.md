@@ -76,6 +76,20 @@ With an else branch:
 <{ endif }>
 ```
 
+With elseif for chained conditions:
+
+```text
+<{ if( $role === "admin" ) }>
+    <p>Administrator</p>
+<{ elseif( $role === "editor" ) }>
+    <p>Editor</p>
+<{ else }>
+    <p>Guest</p>
+<{ endif }>
+```
+
+Multiple elseif branches are supported — the first matching condition wins.
+
 ### Supported Operators
 
 `==`, `===`, `!=`, `!==`, `>`, `<`, `>=`, `<=`

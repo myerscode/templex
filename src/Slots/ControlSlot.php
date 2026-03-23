@@ -36,7 +36,7 @@ class ControlSlot extends Slot
             Templex::PLACEHOLDER_OPEN,
             '\s*',
             '(?<structure>(',
-            '(?:end)?if|else|',
+            '(?:end)?if|elseif|else|',
             '(?:end)?foreach|',
             '(?:end)?for|',
             '(?:end)?switch|case|default',
@@ -56,6 +56,15 @@ class ControlSlot extends Slot
                         '%s-%s-%s',
                         $matches[0],
                         array_pop($lastIf),
+                        ($this->depthCounter - 1),
+                    );
+                }
+
+                if ($matches['structure'] === 'elseif') {
+                    return sprintf(
+                        '%s-%s-%s',
+                        $matches[0],
+                        end($lastIf),
                         ($this->depthCounter - 1),
                     );
                 }
@@ -229,30 +238,81 @@ class ControlSlot extends Slot
             implode('', $regexParts),
             function (array $matches) use ($variables): string {
 
-                $elseRegex = [
-                    '/',
-                    Templex::PLACEHOLDER_OPEN,
-                    '\s*',
-                    'else' . $matches['index'],
-                    '\s*',
-                    Templex::PLACEHOLDER_CLOSE,
-                    '/si',
-                ];
+                $elseifRegex = '/' .
+                    Templex::PLACEHOLDER_OPEN .
+                    '\s*' .
+                    'elseif' . $matches['index'] .
+                    '\s*\(\s*(?<condition>.+?)\s*\)\s*' .
+                    Templex::PLACEHOLDER_CLOSE .
+                    '/si';
 
-                $conditionalBody = preg_split(implode('', $elseRegex), $matches['body']);
+                $elseRegex = '/' .
+                    Templex::PLACEHOLDER_OPEN .
+                    '\s*' .
+                    'else' . $matches['index'] .
+                    '\s*' .
+                    Templex::PLACEHOLDER_CLOSE .
+                    '/si';
 
-                $condition = $this->resolveCondition(trim($matches['variable']), $variables);
+                // Split body into branches: if body, elseif bodies, else body
+                $branches = $this->parseIfBranches($matches['body'], $matches['index'], $matches['variable'], $elseifRegex, $elseRegex);
 
-                if ($condition) {
-                    return trim($conditionalBody[0]);
+                foreach ($branches as $branch) {
+                    if ($branch['type'] === 'else') {
+                        return trim($branch['body']);
+                    }
+
+                    if ($this->resolveCondition(trim($branch['condition']), $variables)) {
+                        return trim($branch['body']);
+                    }
                 }
 
-                return trim($conditionalBody[1] ?? '');
+                return '';
             },
             $template,
         );
 
         return $this->resolveVariables($template, $variables);
+    }
+
+    /**
+     * @return array<int, array{type: string, condition: string, body: string}>
+     */
+    protected function parseIfBranches(string $body, string $index, string $ifCondition, string $elseifRegex, string $elseRegex): array
+    {
+        $branches = [];
+
+        // Split on elseif first
+        $elseifParts = preg_split($elseifRegex, $body, -1, PREG_SPLIT_DELIM_CAPTURE);
+
+        // First part is the if body
+        $ifBody = array_shift($elseifParts);
+
+        // Check if the if body contains an else
+        $ifParts = preg_split($elseRegex, (string) $ifBody, 2);
+        $branches[] = ['type' => 'if', 'condition' => $ifCondition, 'body' => $ifParts[0]];
+
+        if (count($ifParts) > 1) {
+            $branches[] = ['type' => 'else', 'condition' => '', 'body' => $ifParts[1]];
+            return $branches;
+        }
+
+        // Process elseif branches (condition, body pairs from the split)
+        while ($elseifParts !== []) {
+            $condition = (string) array_shift($elseifParts);
+            $branchBody = (string) array_shift($elseifParts);
+
+            // Check if this branch body contains an else
+            $branchParts = preg_split($elseRegex, $branchBody, 2);
+            $branches[] = ['type' => 'elseif', 'condition' => $condition, 'body' => $branchParts[0]];
+
+            if (count($branchParts) > 1) {
+                $branches[] = ['type' => 'else', 'condition' => '', 'body' => $branchParts[1]];
+                return $branches;
+            }
+        }
+
+        return $branches;
     }
 
     protected function resolveSwitch(string $index, string $template, Properties $variables): string
