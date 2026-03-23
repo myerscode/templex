@@ -92,7 +92,7 @@ Multiple elseif branches are supported — the first matching condition wins.
 
 ### Supported Operators
 
-`==`, `===`, `!=`, `!==`, `>`, `<`, `>=`, `<=`, `&&`, `||`
+`==`, `===`, `!=`, `!==`, `>`, `<`, `>=`, `<=`, `&&`, `||`, `!`
 
 ### Self-Evaluation
 
@@ -123,6 +123,16 @@ Combine conditions with `&&` (and) and `||` (or):
 
 <{ if( $role === "admin" || $role === "editor" ) }>
     Can edit
+<{ endif }>
+```
+
+### Negation
+
+Negate any condition with `!`:
+
+```text
+<{ if( !$banned ) }>
+    Welcome
 <{ endif }>
 ```
 

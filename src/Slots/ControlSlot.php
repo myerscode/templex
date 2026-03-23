@@ -698,6 +698,11 @@ class ControlSlot extends Slot
             return true;
         }
 
+        // Handle negation (!) — negate the inner expression
+        if (preg_match('/^!\s*(.+)$/', $condition, $negMatches)) {
+            return !$this->resolveCondition(trim($negMatches[1]), $variables);
+        }
+
         $simpleComparisonRegex = [
             'self' => '/^\$(?<variable>\w+)\s?$/si',
             'boolean' => '/^(?<boolean>true|false)\s?$/si',

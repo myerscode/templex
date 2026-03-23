@@ -134,6 +134,28 @@ Multiple elseif branches are supported. The first matching condition wins, and t
 <{ endfor }>
 ```
 
+### Negation
+
+Negate any condition with `!`:
+
+```text
+<{ if( !$banned ) }>
+    <p>Welcome back.</p>
+<{ endif }>
+
+<{ if( !false ) }>
+    Always shown
+<{ endif }>
+```
+
+Negation works with logical operators:
+
+```text
+<{ if( !$banned && $active ) }>
+    Active and not banned
+<{ endif }>
+```
+
 ### Logical Operators
 
 Combine multiple conditions with `&&` (and) and `||` (or):
@@ -182,6 +204,7 @@ Logical operators work with comparisons, self-evaluation, and inside elseif bran
 | `<=`     | Less than or equal |
 | `&&`     | Logical AND |
 | `\|\|`   | Logical OR |
+| `!`      | Negation |
 
 ## Supported Value Types
 
