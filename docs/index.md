@@ -13,5 +13,6 @@ Templex is a lightweight, regex-based template rendering engine for PHP that all
 
 ## Example Guides
 
+- [Condition Examples](condition-examples.md) — operators, self-evaluation, nesting, and value types
 - [For Loop Examples](for-loop-examples.md) — nested loops, tables, pagination, and best practices
 - [Switch Statement Examples](switch-examples.md) — string/numeric/boolean cases, nesting, and variable cases

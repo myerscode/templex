@@ -97,7 +97,7 @@ A variable on its own evaluates as truthy or falsy:
 <{ endif }>
 ```
 
-Conditions can be nested and combined with other control structures.
+Conditions can be nested and combined with other control structures. For more examples including nested conditions and operator usage, see the [Condition Examples](condition-examples.md).
 
 ---
 

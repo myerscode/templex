@@ -44,6 +44,7 @@ Hello <{ $name }>!
 
 ### Example Guides
 
+- [Condition Examples](docs/condition-examples.md)
 - [For Loop Examples](docs/for-loop-examples.md)
 - [Switch Statement Examples](docs/switch-examples.md)
 
