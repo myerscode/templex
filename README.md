@@ -2,6 +2,7 @@
 > A lightweight, regex based template rendering engine for PHP
 
 [![Latest Stable Version](https://poser.pugx.org/myerscode/templex/v/stable)](https://packagist.org/packages/myerscode/templex)
+[![PHP Version Require](http://poser.pugx.org/myerscode/templex/require/php)](https://packagist.org/packages/myerscode/templex)
 [![Total Downloads](https://poser.pugx.org/myerscode/templex/downloads)](https://packagist.org/packages/myerscode/templex)
 [![License](https://poser.pugx.org/myerscode/templex/license)](https://packagist.org/packages/myerscode/templex)
 ![Tests](https://github.com/myerscode/templex/actions/workflows/tests.yml/badge.svg?branch=main)
