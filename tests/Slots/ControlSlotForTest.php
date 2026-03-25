@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Slots;
 
 use Myerscode\Templex\Properties;
 use Tests\TestCase;
 
-class ControlSlotForTest extends TestCase
+final class ControlSlotForTest extends TestCase
 {
     public function testRenderWithForLoop(): void
     {
@@ -16,7 +18,7 @@ class ControlSlotForTest extends TestCase
 
         $result = $this->render->render('for-loop.stub', $data);
 
-        $this->assertEquals($this->expectedContent('for-loop.stub'), $result);
+        $this->assertSame($this->expectedContent('for-loop.stub'), $result);
     }
 
     public function testBasicForLoop(): void

@@ -15,18 +15,18 @@ class ControlSlot extends Slot
     /** @var array<int, int> */
     protected array $levelCounter = [];
 
-    protected function resolveVariables(string $template, Properties $variables): string
+    protected function resolveVariables(string $template, Properties $properties): string
     {
-        $template = new TernarySlot($this->engine)->process($template, $variables);
+        $template = new TernarySlot($this->engine)->process($template, $properties);
 
-        return new VariableSlot($this->engine)->process($template, $variables);
+        return new VariableSlot($this->engine)->process($template, $properties);
     }
 
-    public function process(string $template, Properties $variables): string
+    public function process(string $template, Properties $properties): string
     {
         $indexedTemplate = $this->indexControls($template);
 
-        return $this->processIndexes($indexedTemplate, $variables);
+        return $this->processIndexes($indexedTemplate, $properties);
     }
 
     protected function indexControls(string $template): string
@@ -118,7 +118,7 @@ class ControlSlot extends Slot
         );
     }
 
-    protected function processIndexes(string $template, Properties $variables): string
+    protected function processIndexes(string $template, Properties $properties): string
     {
         $regexParts = [
             '/',
@@ -133,25 +133,25 @@ class ControlSlot extends Slot
         if ($matches !== []) {
             $control = $matches['control'];
             $index = $matches['index'];
-            $template = $this->resolveControl($control, $index, $template, $variables);
-            $template = $this->processIndexes($template, $variables);
+            $template = $this->resolveControl($control, $index, $template, $properties);
+            $template = $this->processIndexes($template, $properties);
         }
 
         return $template;
     }
 
-    protected function resolveControl(string $control, string $index, string $template, Properties $variables): string
+    protected function resolveControl(string $control, string $index, string $template, Properties $properties): string
     {
         return match ($control) {
-            'foreach' => $this->resolveForEach($index, $template, $variables),
-            'if' => $this->resolveIfStatement($index, $template, $variables),
-            'switch' => $this->resolveSwitch($index, $template, $variables),
-            'for' => $this->resolveFor($index, $template, $variables),
+            'foreach' => $this->resolveForEach($index, $template, $properties),
+            'if' => $this->resolveIfStatement($index, $template, $properties),
+            'switch' => $this->resolveSwitch($index, $template, $properties),
+            'for' => $this->resolveFor($index, $template, $properties),
             default => throw new Exception('Unknown control structure: ' . $control),
         };
     }
 
-    protected function resolveForEach(string $index, string $template, Properties $variables): string
+    protected function resolveForEach(string $index, string $template, Properties $properties): string
     {
         $regexParts = [
             '/',
@@ -176,16 +176,16 @@ class ControlSlot extends Slot
 
         return (string) preg_replace_callback(
             implode('', $regexParts),
-            function (array $matches) use ($variables): string {
+            function (array $matches) use ($properties): string {
                 $output = '';
-                $hasKey = !empty($matches['key']);
-                $items = $variables->resolveValue($matches);
+                $hasKey = isset($matches['key']) && ($matches['key'] !== '' && $matches['key'] !== '0');
+                $items = $properties->resolveValue($matches);
                 $count = is_countable($items) ? count($items) : 0;
                 $index = 0;
 
                 foreach ($items as $key => $value) {
                     $scope = array_merge(
-                        $variables->variables(),
+                        $properties->variables(),
                         [
                             $matches['value'] => $value,
                             'loop_index' => $index,
@@ -211,7 +211,7 @@ class ControlSlot extends Slot
         );
     }
 
-    protected function resolveIfStatement(string $index, string $template, Properties $variables): string
+    protected function resolveIfStatement(string $index, string $template, Properties $properties): string
     {
         $regexParts = [
             '/',
@@ -236,7 +236,7 @@ class ControlSlot extends Slot
 
         $template = (string) preg_replace_callback(
             implode('', $regexParts),
-            function (array $matches) use ($variables): string {
+            function (array $matches) use ($properties): string {
 
                 $elseifRegex = '/' .
                     Templex::PLACEHOLDER_OPEN .
@@ -262,7 +262,7 @@ class ControlSlot extends Slot
                         return trim($branch['body']);
                     }
 
-                    if ($this->resolveCondition(trim($branch['condition']), $variables)) {
+                    if ($this->resolveCondition(trim($branch['condition']), $properties)) {
                         return trim($branch['body']);
                     }
                 }
@@ -272,7 +272,7 @@ class ControlSlot extends Slot
             $template,
         );
 
-        return $this->resolveVariables($template, $variables);
+        return $this->resolveVariables($template, $properties);
     }
 
     /**
@@ -315,7 +315,7 @@ class ControlSlot extends Slot
         return $branches;
     }
 
-    protected function resolveSwitch(string $index, string $template, Properties $variables): string
+    protected function resolveSwitch(string $index, string $template, Properties $properties): string
     {
         $regexParts = [
             '/',
@@ -340,20 +340,20 @@ class ControlSlot extends Slot
 
         $template = (string) preg_replace_callback(
             implode('', $regexParts),
-            function (array $matches) use ($variables): string {
+            function (array $matches) use ($properties): string {
                 $switchVariable = trim($matches['variable']);
                 $switchBody = $matches['body'];
                 $switchIndex = $matches['index'];
 
                 // Get the value to switch on
-                $switchValue = $this->resolveSwitchValue($switchVariable, $variables);
+                $switchValue = $this->resolveSwitchValue($switchVariable, $properties);
 
                 // Parse cases and default
                 $cases = $this->parseSwitchCases($switchBody, $switchIndex);
 
                 // Find matching case or default
                 foreach ($cases as $case) {
-                    if ($case['type'] === 'case' && $this->compareSwitchValues($switchValue, $case['value'], $variables)) {
+                    if ($case['type'] === 'case' && $this->compareSwitchValues($switchValue, $case['value'], $properties)) {
                         return trim((string) $case['body']);
                     }
                 }
@@ -371,14 +371,14 @@ class ControlSlot extends Slot
             $template,
         );
 
-        return $this->resolveVariables($template, $variables);
+        return $this->resolveVariables($template, $properties);
     }
 
-    protected function resolveSwitchValue(string $variable, Properties $variables): mixed
+    protected function resolveSwitchValue(string $variable, Properties $properties): mixed
     {
         // Handle variable references
         if (preg_match('/^\$(\w+)$/', $variable, $matches)) {
-            return $variables->resolveValue(['variable' => $matches[1]]);
+            return $properties->resolveValue(['variable' => $matches[1]]);
         }
 
         // Handle string literals
@@ -434,11 +434,11 @@ class ControlSlot extends Slot
         // Find all case statements
         preg_match_all(implode('', $caseRegex), $body, $caseMatches, PREG_SET_ORDER);
 
-        foreach ($caseMatches as $match) {
+        foreach ($caseMatches as $caseMatch) {
             $cases[] = [
                 'type' => 'case',
-                'value' => trim($match['value']),
-                'body' => $match['body'],
+                'value' => trim($caseMatch['value']),
+                'body' => $caseMatch['body'],
             ];
         }
 
@@ -468,13 +468,13 @@ class ControlSlot extends Slot
         return $cases;
     }
 
-    protected function compareSwitchValues(mixed $switchValue, string $caseValue, Properties $variables): bool
+    protected function compareSwitchValues(mixed $switchValue, string $caseValue, Properties $properties): bool
     {
-        $resolvedCaseValue = $this->resolveSwitchValue($caseValue, $variables);
+        $resolvedCaseValue = $this->resolveSwitchValue($caseValue, $properties);
         return $switchValue === $resolvedCaseValue;
     }
 
-    protected function resolveFor(string $index, string $template, Properties $variables): string
+    protected function resolveFor(string $index, string $template, Properties $properties): string
     {
         $regexParts = [
             '/',
@@ -500,21 +500,21 @@ class ControlSlot extends Slot
 
         return (string) preg_replace_callback(
             implode('', $regexParts),
-            function (array $matches) use ($variables): string {
+            function (array $matches) use ($properties): string {
                 $init = trim($matches['init']);
                 $condition = trim($matches['condition']);
                 $increment = trim($matches['increment']);
                 $body = $matches['body'];
 
                 // Parse initialization (e.g., $i = 0)
-                $initParts = $this->parseForInit($init, $variables);
+                $initParts = $this->parseForInit($init, $properties);
                 $loopVar = $initParts['variable'];
                 $startValue = $initParts['value'];
 
                 // Parse condition (e.g., $i < 10)
                 $conditionParts = $this->parseForCondition($condition);
                 $operator = $conditionParts['operator'];
-                $endValue = $this->resolveForValue($conditionParts['value'], $variables);
+                $endValue = $this->resolveForValue($conditionParts['value'], $properties);
 
                 // Parse increment (e.g., $i++)
                 $incrementParts = $this->parseForIncrement($increment);
@@ -536,7 +536,7 @@ class ControlSlot extends Slot
                 // Execute the for loop
                 while ($this->evaluateForCondition($currentValue, $operator, $endValue)) {
                     $scope = array_merge(
-                        $variables->variables(),
+                        $properties->variables(),
                         [
                             $loopVar => $currentValue,
                             'loop_index' => $index,
@@ -562,12 +562,12 @@ class ControlSlot extends Slot
     /**
      * @return array{variable: string, value: mixed}
      */
-    protected function parseForInit(string $init, Properties $variables): array
+    protected function parseForInit(string $init, Properties $properties): array
     {
         // Parse patterns like: $i = 0, $i = $start, $counter = 1
         if (preg_match('/^\$(\w+)\s*=\s*(.+)$/', $init, $matches)) {
             $variable = $matches[1];
-            $value = $this->resolveForValue(trim($matches[2]), $variables);
+            $value = $this->resolveForValue(trim($matches[2]), $properties);
             return ['variable' => $variable, 'value' => $value];
         }
 
@@ -614,11 +614,11 @@ class ControlSlot extends Slot
         throw new Exception('Invalid for loop increment: ' . $increment);
     }
 
-    protected function resolveForValue(string $value, Properties $variables): mixed
+    protected function resolveForValue(string $value, Properties $properties): mixed
     {
         // Handle variable references
         if (preg_match('/^\$(\w+)$/', $value, $matches)) {
-            return $variables->resolveValue(['variable' => $matches[1]]);
+            return $properties->resolveValue(['variable' => $matches[1]]);
         }
 
         // Handle numeric literals
@@ -674,16 +674,17 @@ class ControlSlot extends Slot
      * @throws VariableNotFoundException
      * @throws UnmatchedComparisonException
      */
-    protected function resolveCondition(string $condition, Properties $variables): bool
+    protected function resolveCondition(string $condition, Properties $properties): bool
     {
         // Handle logical OR (||) — split and short-circuit on first true
         if (preg_match('/\|\|/', $condition)) {
             $parts = preg_split('/\s*\|\|\s*/', $condition);
             foreach ($parts as $part) {
-                if ($this->resolveCondition(trim($part), $variables)) {
+                if ($this->resolveCondition(trim($part), $properties)) {
                     return true;
                 }
             }
+
             return false;
         }
 
@@ -691,16 +692,17 @@ class ControlSlot extends Slot
         if (preg_match('/&&/', $condition)) {
             $parts = preg_split('/\s*&&\s*/', $condition);
             foreach ($parts as $part) {
-                if (!$this->resolveCondition(trim($part), $variables)) {
+                if (!$this->resolveCondition(trim($part), $properties)) {
                     return false;
                 }
             }
+
             return true;
         }
 
         // Handle negation (!) — negate the inner expression
         if (preg_match('/^!\s*(.+)$/', $condition, $negMatches)) {
-            return !$this->resolveCondition(trim($negMatches[1]), $variables);
+            return !$this->resolveCondition(trim($negMatches[1]), $properties);
         }
 
         $simpleComparisonRegex = [
@@ -726,7 +728,7 @@ class ControlSlot extends Slot
             if (preg_match($comparisonRegex, $condition, $matches, PREG_UNMATCHED_AS_NULL)) {
                 switch ($conditionType) {
                     case 'self':
-                        $value = $variables->resolveValue(['variable' => $matches['variable']]);
+                        $value = $properties->resolveValue(['variable' => $matches['variable']]);
                         if (!in_array(mb_strtolower((string) $value), ['true', 'false', '0', '1'], true) && !empty($value)) {
                             return true;
                         }
@@ -735,7 +737,7 @@ class ControlSlot extends Slot
                     case 'boolean':
                         return boolval((int)filter_var($matches['boolean'], FILTER_VALIDATE_BOOLEAN));
                     case 'comparison':
-                        return $this->resolveComparison($matches, $variables);
+                        return $this->resolveComparison($matches, $properties);
                 }
             }
         }
@@ -746,7 +748,7 @@ class ControlSlot extends Slot
     /**
      * @param array<int|string, string|null> $matches
      */
-    protected function resolveComparison(array $matches, Properties $variables): bool
+    protected function resolveComparison(array $matches, Properties $properties): bool
     {
         $firstIsLiteral = isset($matches['first_is_literal']);
         $firstIsVar = isset($matches['first_is_variable']);
@@ -762,7 +764,7 @@ class ControlSlot extends Slot
         $secondValue = null;
 
         if ($firstIsVar) {
-            $firstValue = $variables->resolveValue(['variable' => $matches['first_value']]);
+            $firstValue = $properties->resolveValue(['variable' => $matches['first_value']]);
         } elseif ($firstIsNumber) {
             $firstValue = (int) ($matches['first_is_number'] . $matches['first_value']);
         } elseif ($firstIsLiteral) {
@@ -770,7 +772,7 @@ class ControlSlot extends Slot
         }
 
         if ($secondIsVar) {
-            $secondValue = $variables->resolveValue(['variable' => $matches['second_value']]);
+            $secondValue = $properties->resolveValue(['variable' => $matches['second_value']]);
         } elseif ($secondIsNumber) {
             $secondValue = (int) ($matches['second_is_number'] . $matches['second_value']);
         } elseif ($secondIsLiteral) {

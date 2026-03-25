@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests;
 
 use Myerscode\Templex\Templex;
 
-class TemplexTest extends TestCase
+final class TemplexTest extends TestCase
 {
     public function testRenderTemplateWithProperties(): void
     {
@@ -16,7 +18,7 @@ class TemplexTest extends TestCase
 
         $result = $this->render->render('php-parameters.stub', $data);
 
-        $this->assertEquals($this->expectedContent('php-parameters.stub'), $result);
+        $this->assertSame($this->expectedContent('php-parameters.stub'), $result);
     }
 
 
@@ -24,7 +26,7 @@ class TemplexTest extends TestCase
     {
         $templex = new Templex(__DIR__ . '/Resources/Templates/');
 
-        $this->assertEquals(['stub', 'template'], $templex->stubManager()->templateExtensions());
+        $this->assertSame(['stub', 'template'], $templex->stubManager()->templateExtensions());
     }
 
 
@@ -33,6 +35,6 @@ class TemplexTest extends TestCase
     {
         $templex = new Templex(__DIR__ . '/Resources/Templates/', '.stub,   template,  .tmpl,stub');
 
-        $this->assertEquals(['stub', 'template', 'tmpl'], $templex->stubManager()->templateExtensions());
+        $this->assertSame(['stub', 'template', 'tmpl'], $templex->stubManager()->templateExtensions());
     }
 }

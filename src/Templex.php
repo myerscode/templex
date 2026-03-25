@@ -19,9 +19,9 @@ class Templex
         $this->stubManager = new StubManager($templateDirectory, $templateExtensions);
     }
 
-    public function compile(StubInterface $template, Properties $properties): string
+    public function compile(StubInterface $stub, Properties $properties): string
     {
-        return $this->process($template->content(), $properties);
+        return $this->process($stub->content(), $properties);
     }
 
     /**

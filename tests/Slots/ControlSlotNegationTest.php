@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Slots;
 
 use Myerscode\Templex\Properties;
 use Tests\TestCase;
 
-class ControlSlotNegationTest extends TestCase
+final class ControlSlotNegationTest extends TestCase
 {
     public function testNegationOfTruthyVariable(): void
     {

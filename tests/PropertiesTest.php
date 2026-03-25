@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests;
 
 use Myerscode\Templex\Exceptions\VariableNotFoundException;
 use Myerscode\Templex\Properties;
 
-class PropertiesTest extends TestCase
+final class PropertiesTest extends TestCase
 {
     public function testPropertiesCanFindVariable(): void
     {
@@ -25,6 +27,6 @@ class PropertiesTest extends TestCase
     {
         $data = ['name' => 'Fred', 'age' => 30];
         $properties = new Properties($data);
-        $this->assertEquals($data, $properties->variables());
+        $this->assertSame($data, $properties->variables());
     }
 }

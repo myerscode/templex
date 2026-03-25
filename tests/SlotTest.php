@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests;
 
 use Myerscode\Templex\Slots\ControlSlot;
 
-class SlotTest extends TestCase
+final class SlotTest extends TestCase
 {
     public function testCanRenderNestedSlots(): void
     {
@@ -20,6 +22,6 @@ class SlotTest extends TestCase
 
         $result = $this->render->render('nested-slots', $data);
 
-        $this->assertEquals($this->expectedContent('nested-slots.stub'), $result);
+        $this->assertSame($this->expectedContent('nested-slots.stub'), $result);
     }
 }

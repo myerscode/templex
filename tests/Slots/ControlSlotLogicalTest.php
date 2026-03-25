@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Slots;
 
 use Myerscode\Templex\Properties;
 use Tests\TestCase;
 
-class ControlSlotLogicalTest extends TestCase
+final class ControlSlotLogicalTest extends TestCase
 {
     public function testAndBothTrue(): void
     {

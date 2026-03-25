@@ -60,20 +60,20 @@ class StubManager
 
     public function fetchTemplates(): void
     {
-        $fileService = new FileService($this->templateDirectory);
+        $utility = new FileService($this->templateDirectory);
 
-        foreach ($fileService->files() as $file) {
+        foreach ($utility->files() as $file) {
             $this->cached[$this->makeTemplateName($file->getRealPath())] = $file->getRealPath();
         }
     }
 
     public function cacheTemplates(): void
     {
-        $fileService = new FileService($this->templateDirectory);
+        $utility = new FileService($this->templateDirectory);
 
         $templateList = array_map(
             fn (SplFileInfo $file): Stub => new Stub($this->makeTemplateName($file->getRealPath()), $file->getRealPath()),
-            $fileService->files(),
+            $utility->files(),
         );
 
         foreach ($templateList as $template) {

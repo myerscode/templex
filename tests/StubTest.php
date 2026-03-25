@@ -1,21 +1,23 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests;
 
 use Myerscode\Templex\Exceptions\TemplateNotFoundException;
 use Myerscode\Templex\Stub;
 
-class StubTest extends TestCase
+final class StubTest extends TestCase
 {
     public function testStubStoresProperties(): void
     {
         $path = __DIR__ . '/Resources/Templates/loop.stub';
         $name = 'loop';
 
-        $properties = new Stub($name, $path);
+        $stub = new Stub($name, $path);
 
-        $this->assertEquals($path, $properties->path());
-        $this->assertEquals($name, $properties->name());
+        $this->assertSame($path, $stub->path());
+        $this->assertSame($name, $stub->name());
     }
 
     public function testCanGetContent(): void
@@ -23,9 +25,9 @@ class StubTest extends TestCase
         $path = __DIR__ . '/Resources/Templates/text-only.stub';
         $name = 'loop';
 
-        $properties = new Stub($name, $path);
+        $stub = new Stub($name, $path);
 
-        $this->assertEquals(file_get_contents($path), $properties->content());
+        $this->assertEquals(file_get_contents($path), $stub->content());
     }
 
     public function testThrowsExceptionIfStubDoesNotExist(): void
@@ -33,10 +35,10 @@ class StubTest extends TestCase
         $path = __DIR__ . '/Resources/Templates/not-a-stub.stub';
         $name = 'not-a-stub';
 
-        $properties = new Stub($name, $path);
+        $stub = new Stub($name, $path);
         $this->expectException(TemplateNotFoundException::class);
         $this->expectExceptionMessage('Template not-a-stub not found');
 
-        $properties->content();
+        $stub->content();
     }
 }

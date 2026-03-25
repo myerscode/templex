@@ -7,7 +7,7 @@ use Myerscode\Templex\Templex;
 
 class VariableSlot extends Slot
 {
-    public function process(string $template, Properties $variables): string
+    public function process(string $template, Properties $properties): string
     {
         $placeHolderRegex = '\$(?<variable>\w+)?';
 
@@ -15,7 +15,7 @@ class VariableSlot extends Slot
 
         return (string) preg_replace_callback(
             $regex,
-            $variables->resolveValue(...),
+            $properties->resolveValue(...),
             $template,
         );
     }

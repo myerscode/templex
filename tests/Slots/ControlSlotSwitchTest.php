@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Slots;
 
 use Myerscode\Templex\Properties;
 use Tests\TestCase;
 
-class ControlSlotSwitchTest extends TestCase
+final class ControlSlotSwitchTest extends TestCase
 {
     public function testRenderWithSwitchStatement(): void
     {
@@ -17,7 +19,7 @@ class ControlSlotSwitchTest extends TestCase
 
         $result = $this->render->render('switch.stub', $data);
 
-        $this->assertEquals($this->expectedContent('switch.stub'), $result);
+        $this->assertSame($this->expectedContent('switch.stub'), $result);
     }
 
     public function testSwitchWithStringCases(): void
@@ -200,6 +202,6 @@ class ControlSlotSwitchTest extends TestCase
 
         $result = $this->render->render('switch-comprehensive.stub', $data);
 
-        $this->assertEquals($this->expectedContent('switch-comprehensive.stub'), $result);
+        $this->assertSame($this->expectedContent('switch-comprehensive.stub'), $result);
     }
 }

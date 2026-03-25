@@ -6,5 +6,5 @@ use Myerscode\Templex\Properties;
 
 interface SlotInterface
 {
-    public function process(string $template, Properties $variables): string;
+    public function process(string $template, Properties $properties): string;
 }

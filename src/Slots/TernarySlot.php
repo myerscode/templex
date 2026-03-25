@@ -8,14 +8,14 @@ use Myerscode\Templex\Templex;
 
 class TernarySlot extends Slot
 {
-    public function process(string $template, Properties $variables): string
+    public function process(string $template, Properties $properties): string
     {
-        $template = $this->resolveNullCoalescing($template, $variables);
+        $template = $this->resolveNullCoalescing($template, $properties);
 
-        return $this->resolveTernary($template, $variables);
+        return $this->resolveTernary($template, $properties);
     }
 
-    protected function resolveNullCoalescing(string $template, Properties $variables): string
+    protected function resolveNullCoalescing(string $template, Properties $properties): string
     {
         $regex = '/' .
             Templex::PLACEHOLDER_OPEN .
@@ -25,20 +25,20 @@ class TernarySlot extends Slot
 
         return (string) preg_replace_callback(
             $regex,
-            function (array $matches) use ($variables): string {
+            function (array $matches) use ($properties): string {
                 try {
-                    $value = $variables->resolveValue(['variable' => $matches['variable']]);
+                    $value = $properties->resolveValue(['variable' => $matches['variable']]);
 
                     return (string) $value;
                 } catch (VariableNotFoundException) {
-                    return $this->resolveLiteral(trim($matches['default']), $variables);
+                    return $this->resolveLiteral(trim($matches['default']), $properties);
                 }
             },
             $template,
         );
     }
 
-    protected function resolveTernary(string $template, Properties $variables): string
+    protected function resolveTernary(string $template, Properties $properties): string
     {
         $regex = '/' .
             Templex::PLACEHOLDER_OPEN .
@@ -48,9 +48,9 @@ class TernarySlot extends Slot
 
         return (string) preg_replace_callback(
             $regex,
-            function (array $matches) use ($variables): string {
+            function (array $matches) use ($properties): string {
                 try {
-                    $value = $variables->resolveValue(['variable' => $matches['variable']]);
+                    $value = $properties->resolveValue(['variable' => $matches['variable']]);
                 } catch (VariableNotFoundException) {
                     $value = false;
                 }
@@ -58,8 +58,8 @@ class TernarySlot extends Slot
                 $isTruthy = $this->evaluateTruthiness($value);
 
                 return $isTruthy
-                    ? $this->resolveLiteral(trim($matches['truthy']), $variables)
-                    : $this->resolveLiteral(trim($matches['falsy']), $variables);
+                    ? $this->resolveLiteral(trim($matches['truthy']), $properties)
+                    : $this->resolveLiteral(trim($matches['falsy']), $properties);
             },
             $template,
         );
@@ -78,12 +78,12 @@ class TernarySlot extends Slot
         return (bool) $value;
     }
 
-    protected function resolveLiteral(string $literal, Properties $variables): string
+    protected function resolveLiteral(string $literal, Properties $properties): string
     {
         // Variable reference
         if (preg_match('/^\$(\w+)$/', $literal, $matches)) {
             try {
-                return (string) $variables->resolveValue(['variable' => $matches[1]]);
+                return (string) $properties->resolveValue(['variable' => $matches[1]]);
             } catch (VariableNotFoundException) {
                 return '';
             }

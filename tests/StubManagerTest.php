@@ -1,8 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests;
 
-class StubManagerTest extends TestCase
+final class StubManagerTest extends TestCase
 {
     public function testLoadsTemplates(): void
     {
@@ -54,18 +56,18 @@ class StubManagerTest extends TestCase
 
     public function testClearTemplateCache(): void
     {
-        $this->assertTrue($this->stubManager->templates() !== []);
+        $this->assertNotSame([], $this->stubManager->templates());
         $this->stubManager->clearTemplateCache();
-        $this->assertTrue($this->stubManager->templates() === []);
+        $this->assertSame([], $this->stubManager->templates());
     }
 
     public function testSetsCustomExtensions(): void
     {
-        $this->assertEquals(['stub'], $this->stubManager->templateExtensions());
+        $this->assertSame(['stub'], $this->stubManager->templateExtensions());
 
         $this->stubManager->setTemplateExtensions(['foo', 'bar']);
 
-        $this->assertEquals(['foo', 'bar'], $this->stubManager->templateExtensions());
+        $this->assertSame(['foo', 'bar'], $this->stubManager->templateExtensions());
     }
 
     public function testAddsSlot(): void

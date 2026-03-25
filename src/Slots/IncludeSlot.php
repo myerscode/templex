@@ -8,7 +8,7 @@ use Myerscode\Templex\Templex;
 
 class IncludeSlot extends Slot
 {
-    public function process(string $template, Properties $variables): string
+    public function process(string $template, Properties $properties): string
     {
         $regex = [
             '/',

@@ -1,62 +1,59 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Slots;
 
+use Iterator;
 use Myerscode\Templex\Exceptions\UnmatchedComparisonException;
 use Myerscode\Templex\Properties;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
-class ControlSlotTest extends TestCase
+final class ControlSlotTest extends TestCase
 {
-    public static function operatorProvider(): array
+    public static function operatorProvider(): Iterator
     {
-        return [
-            '== pass' => ['==', "'a'", "'a'", 'pass'],
-            '== pass 2' => ['==', "'abc'", "'abc'", 'pass'],
-            '== fail' => ['==', "'a'", "'b'", 'fail'],
-            '=== pass' => ['===', "'a'", "'a'", 'pass'],
-            '=== pass 2' => ['===', "'abc'", "'abc'", 'pass'],
-            '=== fail' => ['===', "'a'", "'b'", 'fail'],
-            '!= pass' => ['!=', "'a'", "'a'", 'fail'],
-            '!= pass 2' => ['!=', "'a'", "'b'", 'pass'],
-            '!= pass 3' => ['!=', '7', 49, 'pass'],
-            '!= pass 4' => ['!=', "'abc'", "'abc'", 'fail'],
-            '!= fail' => ['!==', "'a'", "'b'", 'pass'],
-            '!== pass' => ['!==', "'a'", "'a'", 'fail'],
-            '!== pass 2' => ['!==', "'abc'", "'abc'", 'fail'],
-            '!== fail' => ['!==', "'49'", 49, 'pass'],
-            '> pass' => ['>', 49, 7, 'pass'],
-            '> fail' => ['>', 7, 49, 'fail'],
-            '>= equal pass' => ['>=', 7, 7, 'pass'],
-            '>= pass' => ['>=', 49, 48, 'pass'],
-            '>= fail' => ['>=', 7, 48, 'fail'],
-            '< pass' => ['<', 7, 49, 'pass'],
-            '< fail' => ['<', 49, 7, 'fail'],
-            '<= pass' => ['<=', 7, 49, 'pass'],
-            '<= pass equal' => ['<=', 49, 49, 'pass'],
-            '<= fail' => ['<=', 49, 7, 'fail'],
-        ];
+        yield '== pass' => ['==', "'a'", "'a'", 'pass'];
+        yield '== pass 2' => ['==', "'abc'", "'abc'", 'pass'];
+        yield '== fail' => ['==', "'a'", "'b'", 'fail'];
+        yield '=== pass' => ['===', "'a'", "'a'", 'pass'];
+        yield '=== pass 2' => ['===', "'abc'", "'abc'", 'pass'];
+        yield '=== fail' => ['===', "'a'", "'b'", 'fail'];
+        yield '!= pass' => ['!=', "'a'", "'a'", 'fail'];
+        yield '!= pass 2' => ['!=', "'a'", "'b'", 'pass'];
+        yield '!= pass 3' => ['!=', '7', 49, 'pass'];
+        yield '!= pass 4' => ['!=', "'abc'", "'abc'", 'fail'];
+        yield '!= fail' => ['!==', "'a'", "'b'", 'pass'];
+        yield '!== pass' => ['!==', "'a'", "'a'", 'fail'];
+        yield '!== pass 2' => ['!==', "'abc'", "'abc'", 'fail'];
+        yield '!== fail' => ['!==', "'49'", 49, 'pass'];
+        yield '> pass' => ['>', 49, 7, 'pass'];
+        yield '> fail' => ['>', 7, 49, 'fail'];
+        yield '>= equal pass' => ['>=', 7, 7, 'pass'];
+        yield '>= pass' => ['>=', 49, 48, 'pass'];
+        yield '>= fail' => ['>=', 7, 48, 'fail'];
+        yield '< pass' => ['<', 7, 49, 'pass'];
+        yield '< fail' => ['<', 49, 7, 'fail'];
+        yield '<= pass' => ['<=', 7, 49, 'pass'];
+        yield '<= pass equal' => ['<=', 49, 49, 'pass'];
+        yield '<= fail' => ['<=', 49, 7, 'fail'];
     }
 
-    public static function truthyProvider(): array
+    public static function truthyProvider(): Iterator
     {
-        return [
-            'true string' => ['true'],
-            'true bool' => [true],
-            'true int' => [1],
-            'word' => ['fred'],
-            'number' => [49],
-        ];
+        yield 'true string' => ['true'];
+        yield 'true bool' => [true];
+        yield 'true int' => [1];
+        yield 'word' => ['fred'];
+        yield 'number' => [49];
     }
 
-    public static function falselyProvider(): array
+    public static function falselyProvider(): Iterator
     {
-        return [
-            'true string' => ['false'],
-            'true bool' => [false],
-            'true int' => [0],
-        ];
+        yield 'true string' => ['false'];
+        yield 'true bool' => [false];
+        yield 'true int' => [0];
     }
 
     public function testHandlesComparisons(): void
@@ -77,7 +74,7 @@ class ControlSlotTest extends TestCase
 
         $result = $this->render->render('condition.stub', $data);
 
-        $this->assertEquals($this->expectedContent('condition.stub'), $result);
+        $this->assertSame($this->expectedContent('condition.stub'), $result);
     }
 
     #[DataProvider('truthyProvider')]
@@ -94,7 +91,7 @@ class ControlSlotTest extends TestCase
         ';
 
         $result = $this->render->compile($this->rawStub($raw), new Properties(['var' => $var]));
-        $this->assertEquals($expected, $result);
+        $this->assertSame($expected, $result);
     }
 
     #[DataProvider('falselyProvider')]
@@ -111,7 +108,7 @@ class ControlSlotTest extends TestCase
         ';
 
         $result = $this->render->compile($this->rawStub($raw), new Properties(['var' => $var]));
-        $this->assertEquals($expected, $result);
+        $this->assertSame($expected, $result);
     }
 
     public function testHandlesBoolComparison(): void
@@ -128,7 +125,7 @@ class ControlSlotTest extends TestCase
         pass
         ';
         $result = $this->render->compile($this->rawStub($raw), new Properties([]));
-        $this->assertEquals($expected, $result);
+        $this->assertSame($expected, $result);
 
         $raw = '
         <{ if( false ) }>
@@ -142,7 +139,7 @@ class ControlSlotTest extends TestCase
         fail
         ';
         $result = $this->render->compile($this->rawStub($raw), new Properties([]));
-        $this->assertEquals($expected, $result);
+        $this->assertSame($expected, $result);
     }
 
     #[DataProvider('operatorProvider')]
@@ -160,7 +157,7 @@ class ControlSlotTest extends TestCase
         {$outcome}
         ";
         $result = $this->render->compile($this->rawStub($raw), new Properties([]));
-        $this->assertEquals($expected, $result);
+        $this->assertSame($expected, $result);
     }
 
     public function testThrowsErrorOnUnmatchedComparisons(): void
@@ -179,7 +176,7 @@ class ControlSlotTest extends TestCase
 
         $result = $this->render->render('loop.stub', $data);
 
-        $this->assertEquals($this->expectedContent('loop.stub'), $result);
+        $this->assertSame($this->expectedContent('loop.stub'), $result);
     }
 
     public function testWhiteSpaceThreshold(): void
@@ -192,7 +189,7 @@ class ControlSlotTest extends TestCase
 
         $result = $this->render->render('white-space-loop.stub', $data);
 
-        $this->assertEquals($this->expectedContent('loop.stub'), $result);
+        $this->assertSame($this->expectedContent('loop.stub'), $result);
     }
 
     public function testWhiteSpaceOfConditions(): void
@@ -204,7 +201,7 @@ class ControlSlotTest extends TestCase
 
         $result = $this->render->render('white-space-condition', $data);
 
-        $this->assertEquals($this->expectedContent('white-space-condition.stub'), $result);
+        $this->assertSame($this->expectedContent('white-space-condition.stub'), $result);
     }
 
 }

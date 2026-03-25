@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Slots;
 
 use Exception;
@@ -8,14 +10,14 @@ use Myerscode\Templex\Slots\ControlSlot;
 use ReflectionMethod;
 use Tests\TestCase;
 
-class ControlSlotErrorTest extends TestCase
+final class ControlSlotErrorTest extends TestCase
 {
-    private ControlSlot $slot;
+    private ControlSlot $controlSlot;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->slot = new ControlSlot($this->stubManager);
+        $this->controlSlot = new ControlSlot($this->stubManager);
     }
 
     public function testResolveControlThrowsOnUnknownStructure(): void
@@ -23,8 +25,8 @@ class ControlSlotErrorTest extends TestCase
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Unknown control structure: while');
 
-        $method = new ReflectionMethod(ControlSlot::class, 'resolveControl');
-        $method->invoke($this->slot, 'while', '-1-0', '', new Properties([]));
+        $reflectionMethod = new ReflectionMethod(ControlSlot::class, 'resolveControl');
+        $reflectionMethod->invoke($this->controlSlot, 'while', '-1-0', '', new Properties([]));
     }
 
     public function testParseForInitThrowsOnInvalidInit(): void
@@ -32,8 +34,8 @@ class ControlSlotErrorTest extends TestCase
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Invalid for loop initialization: invalid');
 
-        $method = new ReflectionMethod(ControlSlot::class, 'parseForInit');
-        $method->invoke($this->slot, 'invalid', new Properties([]));
+        $reflectionMethod = new ReflectionMethod(ControlSlot::class, 'parseForInit');
+        $reflectionMethod->invoke($this->controlSlot, 'invalid', new Properties([]));
     }
 
     public function testParseForConditionThrowsOnInvalidCondition(): void
@@ -41,8 +43,8 @@ class ControlSlotErrorTest extends TestCase
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Invalid for loop condition: invalid');
 
-        $method = new ReflectionMethod(ControlSlot::class, 'parseForCondition');
-        $method->invoke($this->slot, 'invalid');
+        $reflectionMethod = new ReflectionMethod(ControlSlot::class, 'parseForCondition');
+        $reflectionMethod->invoke($this->controlSlot, 'invalid');
     }
 
     public function testParseForIncrementThrowsOnInvalidIncrement(): void
@@ -50,8 +52,8 @@ class ControlSlotErrorTest extends TestCase
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Invalid for loop increment: invalid');
 
-        $method = new ReflectionMethod(ControlSlot::class, 'parseForIncrement');
-        $method->invoke($this->slot, 'invalid');
+        $reflectionMethod = new ReflectionMethod(ControlSlot::class, 'parseForIncrement');
+        $reflectionMethod->invoke($this->controlSlot, 'invalid');
     }
 
     public function testEvaluateForConditionThrowsOnUnknownOperator(): void
@@ -59,8 +61,8 @@ class ControlSlotErrorTest extends TestCase
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Unknown for loop operator: <>');
 
-        $method = new ReflectionMethod(ControlSlot::class, 'evaluateForCondition');
-        $method->invoke($this->slot, 1, '<>', 2);
+        $reflectionMethod = new ReflectionMethod(ControlSlot::class, 'evaluateForCondition');
+        $reflectionMethod->invoke($this->controlSlot, 1, '<>', 2);
     }
 
     public function testApplyForIncrementThrowsOnUnknownType(): void
@@ -68,38 +70,38 @@ class ControlSlotErrorTest extends TestCase
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Unknown increment type: **');
 
-        $method = new ReflectionMethod(ControlSlot::class, 'applyForIncrement');
-        $method->invoke($this->slot, 1, '**', 2);
+        $reflectionMethod = new ReflectionMethod(ControlSlot::class, 'applyForIncrement');
+        $reflectionMethod->invoke($this->controlSlot, 1, '**', 2);
     }
 
     public function testResolveSwitchValueFallsBackToRawString(): void
     {
-        $method = new ReflectionMethod(ControlSlot::class, 'resolveSwitchValue');
-        $result = $method->invoke($this->slot, 'some_unknown_value', new Properties([]));
+        $reflectionMethod = new ReflectionMethod(ControlSlot::class, 'resolveSwitchValue');
+        $result = $reflectionMethod->invoke($this->controlSlot, 'some_unknown_value', new Properties([]));
 
         $this->assertSame('some_unknown_value', $result);
     }
 
     public function testResolveForValueHandlesStringLiterals(): void
     {
-        $method = new ReflectionMethod(ControlSlot::class, 'resolveForValue');
+        $reflectionMethod = new ReflectionMethod(ControlSlot::class, 'resolveForValue');
 
-        $this->assertSame('hello', $method->invoke($this->slot, '"hello"', new Properties([])));
-        $this->assertSame('world', $method->invoke($this->slot, "'world'", new Properties([])));
+        $this->assertSame('hello', $reflectionMethod->invoke($this->controlSlot, '"hello"', new Properties([])));
+        $this->assertSame('world', $reflectionMethod->invoke($this->controlSlot, "'world'", new Properties([])));
     }
 
     public function testResolveForValueHandlesBooleanLiterals(): void
     {
-        $method = new ReflectionMethod(ControlSlot::class, 'resolveForValue');
+        $reflectionMethod = new ReflectionMethod(ControlSlot::class, 'resolveForValue');
 
-        $this->assertTrue($method->invoke($this->slot, 'true', new Properties([])));
-        $this->assertFalse($method->invoke($this->slot, 'false', new Properties([])));
+        $this->assertTrue($reflectionMethod->invoke($this->controlSlot, 'true', new Properties([])));
+        $this->assertFalse($reflectionMethod->invoke($this->controlSlot, 'false', new Properties([])));
     }
 
     public function testResolveForValueFallsBackToString(): void
     {
-        $method = new ReflectionMethod(ControlSlot::class, 'resolveForValue');
-        $result = $method->invoke($this->slot, 'unknown', new Properties([]));
+        $reflectionMethod = new ReflectionMethod(ControlSlot::class, 'resolveForValue');
+        $result = $reflectionMethod->invoke($this->controlSlot, 'unknown', new Properties([]));
 
         $this->assertSame('unknown', $result);
     }
