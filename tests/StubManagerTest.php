@@ -6,19 +6,11 @@ namespace Tests;
 
 final class StubManagerTest extends TestCase
 {
-    public function testLoadsTemplates(): void
+    public function testAddsSlot(): void
     {
-        $expected = [
-            'partials.header',
-            'partials.stub-partial',
-            'php-parameters',
-        ];
-
-        $templates = $this->stubManager->templates();
-
-        foreach ($expected as $expects) {
-            $this->assertArrayHasKey($expects, $templates);
-        }
+        $initialCount = count($this->stubManager->slots());
+        $this->stubManager->addSlot('App\\CustomSlot');
+        $this->assertCount($initialCount + 1, $this->stubManager->slots());
     }
 
     public function testCachesTemplate(): void
@@ -37,6 +29,13 @@ final class StubManagerTest extends TestCase
         $this->stubManager->getStub('text-only');
     }
 
+    public function testClearTemplateCache(): void
+    {
+        $this->assertNotSame([], $this->stubManager->templates());
+        $this->stubManager->clearTemplateCache();
+        $this->assertSame([], $this->stubManager->templates());
+    }
+
     public function testIsTemplate(): void
     {
         $this->assertTrue($this->stubManager->isTemplate('loop'));
@@ -45,20 +44,19 @@ final class StubManagerTest extends TestCase
         $this->assertFalse($this->stubManager->isTemplate('does-not-exist'));
         $this->assertFalse($this->stubManager->isTemplate('partials.error'));
     }
-
-    public function testTemplateNamesAreLowerCase(): void
+    public function testLoadsTemplates(): void
     {
-        $this->assertTrue($this->stubManager->isTemplate('loop'));
-        $this->assertFalse($this->stubManager->isTemplate('LOOP'));
-        $this->assertTrue($this->stubManager->isTemplate('loop'));
-        $this->assertFalse($this->stubManager->isTemplate('PARTIALS.HEADER'));
-    }
+        $expected = [
+            'partials.header',
+            'partials.stub-partial',
+            'php-parameters',
+        ];
 
-    public function testClearTemplateCache(): void
-    {
-        $this->assertNotSame([], $this->stubManager->templates());
-        $this->stubManager->clearTemplateCache();
-        $this->assertSame([], $this->stubManager->templates());
+        $templates = $this->stubManager->templates();
+
+        foreach ($expected as $expects) {
+            $this->assertArrayHasKey($expects, $templates);
+        }
     }
 
     public function testSetsCustomExtensions(): void
@@ -70,10 +68,11 @@ final class StubManagerTest extends TestCase
         $this->assertSame(['foo', 'bar'], $this->stubManager->templateExtensions());
     }
 
-    public function testAddsSlot(): void
+    public function testTemplateNamesAreLowerCase(): void
     {
-        $initialCount = count($this->stubManager->slots());
-        $this->stubManager->addSlot('App\\CustomSlot');
-        $this->assertCount($initialCount + 1, $this->stubManager->slots());
+        $this->assertTrue($this->stubManager->isTemplate('loop'));
+        $this->assertFalse($this->stubManager->isTemplate('LOOP'));
+        $this->assertTrue($this->stubManager->isTemplate('loop'));
+        $this->assertFalse($this->stubManager->isTemplate('PARTIALS.HEADER'));
     }
 }

@@ -49,10 +49,10 @@
     "sort-packages": true
   },
   "scripts": {
-    "tests": "vendor/bin/phpunit --testdox --no-coverage --colors=always",
-    "test-coverage": "XDEBUG_MODE=coverage vendor/bin/phpunit --testdox --colors=always",
+    "analyse": "vendor/bin/phpstan analyse",
     "lint": "vendor/bin/pint",
-    "lint-check": "vendor/bin/pint --test",
-    "analyse": "vendor/bin/phpstan analyse"
+    "security-audit": "@composer audit",
+    "test-coverage": "vendor/bin/phpunit --testdox --colors=always",
+    "tests": "vendor/bin/phpunit --testdox --no-coverage --colors=always"
   }
 }

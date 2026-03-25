@@ -15,6 +15,10 @@ use Symfony\Component\Finder\SplFileInfo;
 
 class StubManager
 {
+    /**
+     * @var array<string, StubInterface|string>
+     */
+    protected array $cached = [];
     /** @var array<int, class-string<SlotInterface>> */
     protected array $defaultSlots = [
         IncludeSlot::class,
@@ -23,18 +27,13 @@ class StubManager
         VariableSlot::class,
     ];
 
-    /**
-     * @var string[]
-     */
-    protected array $templateExtensions = [];
-
     /** @var array<int, class-string<SlotInterface>> */
     protected array $slots = [];
 
     /**
-     * @var array<string, StubInterface|string>
+     * @var string[]
      */
-    protected array $cached = [];
+    protected array $templateExtensions = [];
 
 
     public function __construct(protected string $templateDirectory, string $templateExtensions = 'stub,template')
@@ -46,25 +45,9 @@ class StubManager
         $this->fetchTemplates();
     }
 
-    /**
-     * @param array<int, mixed>|string $templateExtensions
-     */
-    public function setTemplateExtensions(array|string $templateExtensions): void
+    public function addSlot(string $slots): void
     {
-        $extensions = is_string($templateExtensions) ? explode(',', $templateExtensions) : $templateExtensions;
-
-        $extensions = array_filter($extensions, fn ($value): bool => is_string($value) && $value !== '');
-
-        $this->templateExtensions = array_unique(array_map(fn ($extension): string => new StringService($extension)->trim(",. \t\n\r\0\x0B")->value(), $extensions));
-    }
-
-    public function fetchTemplates(): void
-    {
-        $utility = new FileService($this->templateDirectory);
-
-        foreach ($utility->files() as $file) {
-            $this->cached[$this->makeTemplateName($file->getRealPath())] = $file->getRealPath();
-        }
+        $this->slots[] = $slots;
     }
 
     public function cacheTemplates(): void
@@ -86,12 +69,13 @@ class StubManager
         $this->cached = [];
     }
 
-    /**
-     * @throws TemplateNotFoundException
-     */
-    public function getTemplate(string $template): string
+    public function fetchTemplates(): void
     {
-        return $this->getStub($template)->content();
+        $utility = new FileService($this->templateDirectory);
+
+        foreach ($utility->files() as $file) {
+            $this->cached[$this->makeTemplateName($file->getRealPath())] = $file->getRealPath();
+        }
     }
 
     /**
@@ -121,6 +105,14 @@ class StubManager
         throw new TemplateNotFoundException(sprintf('Template %s not found', $templateName));
     }
 
+    /**
+     * @throws TemplateNotFoundException
+     */
+    public function getTemplate(string $template): string
+    {
+        return $this->getStub($template)->content();
+    }
+
     public function isTemplate(string $template): bool
     {
         try {
@@ -135,6 +127,50 @@ class StubManager
     public function isTemplateCached(string $template): bool
     {
         return isset($this->cached[$template]) && ($this->cached[$template] instanceof Stub);
+    }
+
+    /**
+     * @param array<int, class-string<SlotInterface>> $slots
+     */
+    public function setSlots(array $slots): void
+    {
+        $this->slots = $slots;
+    }
+
+    /**
+     * @param array<int, mixed>|string $templateExtensions
+     */
+    public function setTemplateExtensions(array|string $templateExtensions): void
+    {
+        $extensions = is_string($templateExtensions) ? explode(',', $templateExtensions) : $templateExtensions;
+
+        $extensions = array_filter($extensions, fn ($value): bool => is_string($value) && $value !== '');
+
+        $this->templateExtensions = array_unique(array_map(fn ($extension): string => new StringService($extension)->trim(",. \t\n\r\0\x0B")->value(), $extensions));
+    }
+
+    /**
+     * @return array<int, class-string<SlotInterface>>
+     */
+    public function slots(): array
+    {
+        return $this->slots;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function templateExtensions(): array
+    {
+        return $this->templateExtensions;
+    }
+
+    /**
+     * @return array<string, StubInterface|string>
+     */
+    public function templates(): array
+    {
+        return $this->cached;
     }
 
     protected function makeTemplateName(string $templatePath): string
@@ -155,42 +191,5 @@ class StubManager
             ->replace(DIRECTORY_SEPARATOR, '.')
             ->toLowercase()
             ->value();
-    }
-
-    /**
-     * @return array<int, class-string<SlotInterface>>
-     */
-    public function slots(): array
-    {
-        return $this->slots;
-    }
-
-    /**
-     * @return array<string, StubInterface|string>
-     */
-    public function templates(): array
-    {
-        return $this->cached;
-    }
-
-    /**
-     * @return string[]
-     */
-    public function templateExtensions(): array
-    {
-        return $this->templateExtensions;
-    }
-
-    /**
-     * @param array<int, class-string<SlotInterface>> $slots
-     */
-    public function setSlots(array $slots): void
-    {
-        $this->slots = $slots;
-    }
-
-    public function addSlot(string $slots): void
-    {
-        $this->slots[] = $slots;
     }
 }

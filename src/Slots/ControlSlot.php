@@ -15,18 +15,43 @@ class ControlSlot extends Slot
     /** @var array<int, int> */
     protected array $levelCounter = [];
 
-    protected function resolveVariables(string $template, Properties $properties): string
-    {
-        $template = new TernarySlot($this->engine)->process($template, $properties);
-
-        return new VariableSlot($this->engine)->process($template, $properties);
-    }
-
     public function process(string $template, Properties $properties): string
     {
         $indexedTemplate = $this->indexControls($template);
 
         return $this->processIndexes($indexedTemplate, $properties);
+    }
+
+    protected function applyForIncrement(mixed $currentValue, string $incrementType, mixed $incrementValue): mixed
+    {
+        return match ($incrementType) {
+            '++' => $currentValue + 1,
+            '--' => $currentValue - 1,
+            '+=' => $currentValue + $incrementValue,
+            '-=' => $currentValue - $incrementValue,
+            default => throw new Exception('Unknown increment type: ' . $incrementType),
+        };
+    }
+
+    protected function compareSwitchValues(mixed $switchValue, string $caseValue, Properties $properties): bool
+    {
+        $resolvedCaseValue = $this->resolveSwitchValue($caseValue, $properties);
+        return $switchValue === $resolvedCaseValue;
+    }
+
+    protected function evaluateForCondition(mixed $currentValue, string $operator, mixed $endValue): bool
+    {
+        return match ($operator) {
+            '<' => $currentValue < $endValue,
+            '<=' => $currentValue <= $endValue,
+            '>' => $currentValue > $endValue,
+            '>=' => $currentValue >= $endValue,
+            '==' => $currentValue == $endValue,
+            '===' => $currentValue === $endValue,
+            '!=' => $currentValue != $endValue,
+            '!==' => $currentValue !== $endValue,
+            default => throw new Exception('Unknown for loop operator: ' . $operator),
+        };
     }
 
     protected function indexControls(string $template): string
@@ -118,6 +143,165 @@ class ControlSlot extends Slot
         );
     }
 
+    /**
+     * @return array{operator: string, value: string}
+     */
+    protected function parseForCondition(string $condition): array
+    {
+        // Parse patterns like: $i < 10, $i <= $max, $counter > 0
+        if (preg_match('/^\$\w+\s*([<>=!]+)\s*(.+)$/', $condition, $matches)) {
+            $operator = trim($matches[1]);
+            $value = trim($matches[2]);
+            return ['operator' => $operator, 'value' => $value];
+        }
+
+        throw new Exception('Invalid for loop condition: ' . $condition);
+    }
+
+    /**
+     * @return array{type: string, value: int}
+     */
+    protected function parseForIncrement(string $increment): array
+    {
+        // Parse patterns like: $i++, $i--, $i += 2, $i -= 1
+        if (preg_match('/^\$\w+\+\+$/', $increment)) {
+            return ['type' => '++', 'value' => 1];
+        }
+
+        if (preg_match('/^\$\w+--$/', $increment)) {
+            return ['type' => '--', 'value' => 1];
+        }
+
+        if (preg_match('/^\$\w+\s*\+=\s*(.+)$/', $increment, $matches)) {
+            return ['type' => '+=', 'value' => (int)trim($matches[1])];
+        }
+
+        if (preg_match('/^\$\w+\s*-=\s*(.+)$/', $increment, $matches)) {
+            return ['type' => '-=', 'value' => (int)trim($matches[1])];
+        }
+
+        throw new Exception('Invalid for loop increment: ' . $increment);
+    }
+
+    /**
+     * @return array{variable: string, value: mixed}
+     */
+    protected function parseForInit(string $init, Properties $properties): array
+    {
+        // Parse patterns like: $i = 0, $i = $start, $counter = 1
+        if (preg_match('/^\$(\w+)\s*=\s*(.+)$/', $init, $matches)) {
+            $variable = $matches[1];
+            $value = $this->resolveForValue(trim($matches[2]), $properties);
+            return ['variable' => $variable, 'value' => $value];
+        }
+
+        throw new Exception('Invalid for loop initialization: ' . $init);
+    }
+
+    /**
+     * @return array<int, array{type: string, condition: string, body: string}>
+     */
+    protected function parseIfBranches(string $body, string $index, string $ifCondition, string $elseifRegex, string $elseRegex): array
+    {
+        $branches = [];
+
+        // Split on elseif first
+        $elseifParts = preg_split($elseifRegex, $body, -1, PREG_SPLIT_DELIM_CAPTURE);
+
+        // First part is the if body
+        $ifBody = array_shift($elseifParts);
+
+        // Check if the if body contains an else
+        $ifParts = preg_split($elseRegex, (string) $ifBody, 2);
+        $branches[] = ['type' => 'if', 'condition' => $ifCondition, 'body' => $ifParts[0]];
+
+        if (count($ifParts) > 1) {
+            $branches[] = ['type' => 'else', 'condition' => '', 'body' => $ifParts[1]];
+            return $branches;
+        }
+
+        // Process elseif branches (condition, body pairs from the split)
+        while ($elseifParts !== []) {
+            $condition = (string) array_shift($elseifParts);
+            $branchBody = (string) array_shift($elseifParts);
+
+            // Check if this branch body contains an else
+            $branchParts = preg_split($elseRegex, $branchBody, 2);
+            $branches[] = ['type' => 'elseif', 'condition' => $condition, 'body' => $branchParts[0]];
+
+            if (count($branchParts) > 1) {
+                $branches[] = ['type' => 'else', 'condition' => '', 'body' => $branchParts[1]];
+                return $branches;
+            }
+        }
+
+        return $branches;
+    }
+
+    /**
+     * @return array<int, array{type: string, value: string|null, body: string}>
+     */
+    protected function parseSwitchCases(string $body, string $index): array
+    {
+        $cases = [];
+
+        // Regex to find case statements
+        $caseRegex = [
+            '/',
+            Templex::PLACEHOLDER_OPEN,
+            '\s*',
+            'case' . $index,
+            '\s*\(',
+            '\s*',
+            '(?<value>.+?)',
+            '\s*',
+            '\)',
+            '\s*',
+            Templex::PLACEHOLDER_CLOSE,
+            '(?<body>.*?)(?=',
+            Templex::PLACEHOLDER_OPEN,
+            '\s*(?:case' . $index . '|default' . $index . '|endswitch' . $index . ')',
+            '|$)',
+            '/si',
+        ];
+
+        // Find all case statements
+        preg_match_all(implode('', $caseRegex), $body, $caseMatches, PREG_SET_ORDER);
+
+        foreach ($caseMatches as $caseMatch) {
+            $cases[] = [
+                'type' => 'case',
+                'value' => trim($caseMatch['value']),
+                'body' => $caseMatch['body'],
+            ];
+        }
+
+        // Regex to find default statement
+        $defaultRegex = [
+            '/',
+            Templex::PLACEHOLDER_OPEN,
+            '\s*',
+            'default' . $index,
+            '\s*',
+            Templex::PLACEHOLDER_CLOSE,
+            '(?<body>.*?)(?=',
+            Templex::PLACEHOLDER_OPEN,
+            '\s*(?:case' . $index . '|endswitch' . $index . ')',
+            '|$)',
+            '/si',
+        ];
+
+        if (preg_match(implode('', $defaultRegex), $body, $defaultMatch)) {
+            $cases[] = [
+                'type' => 'default',
+                'value' => null,
+                'body' => $defaultMatch['body'],
+            ];
+        }
+
+        return $cases;
+    }
+
     protected function processIndexes(string $template, Properties $properties): string
     {
         $regexParts = [
@@ -140,6 +324,128 @@ class ControlSlot extends Slot
         return $template;
     }
 
+    /**
+     * @param array<int|string, string|null> $matches
+     */
+    protected function resolveComparison(array $matches, Properties $properties): bool
+    {
+        $firstIsLiteral = isset($matches['first_is_literal']);
+        $firstIsVar = isset($matches['first_is_variable']);
+        $firstIsNumber = isset($matches['first_is_number']);
+
+        $secondIsLiteral = isset($matches['second_is_literal']);
+        $secondIsVar = isset($matches['second_is_variable']);
+        $secondIsNumber = isset($matches['second_is_number']);
+
+        $operation = $matches['operators'];
+
+        $firstValue = null;
+        $secondValue = null;
+
+        if ($firstIsVar) {
+            $firstValue = $properties->resolveValue(['variable' => $matches['first_value']]);
+        } elseif ($firstIsNumber) {
+            $firstValue = (int) ($matches['first_is_number'] . $matches['first_value']);
+        } elseif ($firstIsLiteral) {
+            $firstValue = $matches['first_literal_value'];
+        }
+
+        if ($secondIsVar) {
+            $secondValue = $properties->resolveValue(['variable' => $matches['second_value']]);
+        } elseif ($secondIsNumber) {
+            $secondValue = (int) ($matches['second_is_number'] . $matches['second_value']);
+        } elseif ($secondIsLiteral) {
+            $secondValue = $matches['second_literal_value'];
+        }
+
+        return match ($operation) {
+            '==' => $firstValue == $secondValue,
+            '===' => $firstValue === $secondValue,
+            '!=' => $firstValue != $secondValue,
+            '!==' => $firstValue !== $secondValue,
+            '>' => $firstValue > $secondValue,
+            '<' => $firstValue < $secondValue,
+            '>=' => $firstValue >= $secondValue,
+            '<=' => $firstValue <= $secondValue,
+            default => throw new Exception('Unknown comparison operator found ' . $operation),
+        };
+    }
+
+    /**
+     * @throws VariableNotFoundException
+     * @throws UnmatchedComparisonException
+     */
+    protected function resolveCondition(string $condition, Properties $properties): bool
+    {
+        // Handle logical OR (||) — split and short-circuit on first true
+        if (preg_match('/\|\|/', $condition)) {
+            $parts = preg_split('/\s*\|\|\s*/', $condition);
+            foreach ($parts as $part) {
+                if ($this->resolveCondition(trim($part), $properties)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        // Handle logical AND (&&) — split and short-circuit on first false
+        if (preg_match('/&&/', $condition)) {
+            $parts = preg_split('/\s*&&\s*/', $condition);
+            foreach ($parts as $part) {
+                if (!$this->resolveCondition(trim($part), $properties)) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        // Handle negation (!) — negate the inner expression
+        if (preg_match('/^!\s*(.+)$/', $condition, $negMatches)) {
+            return !$this->resolveCondition(trim($negMatches[1]), $properties);
+        }
+
+        $simpleComparisonRegex = [
+            'self' => '/^\$(?<variable>\w+)\s?$/si',
+            'boolean' => '/^(?<boolean>true|false)\s?$/si',
+            'comparison' =>
+                '/^' .
+                '(' .
+                '((?<first_is_literal>[\"\'])(?<first_literal_value>[\w]+)(\k<first_is_literal>))|' .
+                '(((?<first_is_variable>[\$]){1}|(?<first_is_number>[\d]))' .
+                '(?<first_value>\w*))' .
+                ')' .
+                '((?:\s?)(?<operators>[=!><]+)(?:\s?))' .
+                '(' .
+                '((?<second_is_literal>[\"\'])(?<second_literal_value>[\w]+)(\k<second_is_literal>))|' .
+                '(((?<second_is_variable>[\$]){1}|(?<second_is_number>[\d]))' .
+                '(?<second_value>\w*))' .
+                ')' .
+                '$/si',
+        ];
+
+        foreach ($simpleComparisonRegex as $conditionType => $comparisonRegex) {
+            if (preg_match($comparisonRegex, $condition, $matches, PREG_UNMATCHED_AS_NULL)) {
+                switch ($conditionType) {
+                    case 'self':
+                        $value = $properties->resolveValue(['variable' => $matches['variable']]);
+                        if (!in_array(mb_strtolower((string) $value), ['true', 'false', '0', '1'], true) && !empty($value)) {
+                            return true;
+                        }
+
+                        return  boolval((int)filter_var($value, FILTER_VALIDATE_BOOLEAN));
+                    case 'boolean':
+                        return boolval((int)filter_var($matches['boolean'], FILTER_VALIDATE_BOOLEAN));
+                    case 'comparison':
+                        return $this->resolveComparison($matches, $properties);
+                }
+            }
+        }
+
+        throw new UnmatchedComparisonException(sprintf('Unable to resolve condition "%s"', $condition));
+    }
+
     protected function resolveControl(string $control, string $index, string $template, Properties $properties): string
     {
         return match ($control) {
@@ -149,6 +455,91 @@ class ControlSlot extends Slot
             'for' => $this->resolveFor($index, $template, $properties),
             default => throw new Exception('Unknown control structure: ' . $control),
         };
+    }
+
+    protected function resolveFor(string $index, string $template, Properties $properties): string
+    {
+        $regexParts = [
+            '/',
+            Templex::PLACEHOLDER_OPEN,
+            '\s*',
+            'for(?<index>' . $index . ')\(',
+            '\s*',
+            '(?<init>.+?);',
+            '\s*',
+            '(?<condition>.+?);',
+            '\s*',
+            '(?<increment>.+?)',
+            '\s*\)\s*',
+            Templex::PLACEHOLDER_CLOSE,
+            '\s*(?<body>.+)\s?',
+            Templex::PLACEHOLDER_OPEN,
+            '\s*',
+            'endfor\k<index>',
+            '\s*',
+            Templex::PLACEHOLDER_CLOSE,
+            '/si',
+        ];
+
+        return (string) preg_replace_callback(
+            implode('', $regexParts),
+            function (array $matches) use ($properties): string {
+                $init = trim($matches['init']);
+                $condition = trim($matches['condition']);
+                $increment = trim($matches['increment']);
+                $body = $matches['body'];
+
+                // Parse initialization (e.g., $i = 0)
+                $initParts = $this->parseForInit($init, $properties);
+                $loopVar = $initParts['variable'];
+                $startValue = $initParts['value'];
+
+                // Parse condition (e.g., $i < 10)
+                $conditionParts = $this->parseForCondition($condition);
+                $operator = $conditionParts['operator'];
+                $endValue = $this->resolveForValue($conditionParts['value'], $properties);
+
+                // Parse increment (e.g., $i++)
+                $incrementParts = $this->parseForIncrement($increment);
+                $incrementType = $incrementParts['type'];
+                $incrementValue = $incrementParts['value'];
+
+                $output = '';
+                $currentValue = $startValue;
+                $index = 0;
+
+                // Pre-calculate count for loop metadata
+                $countValue = $startValue;
+                $count = 0;
+                while ($this->evaluateForCondition($countValue, $operator, $endValue)) {
+                    $count++;
+                    $countValue = $this->applyForIncrement($countValue, $incrementType, $incrementValue);
+                }
+
+                // Execute the for loop
+                while ($this->evaluateForCondition($currentValue, $operator, $endValue)) {
+                    $scope = array_merge(
+                        $properties->variables(),
+                        [
+                            $loopVar => $currentValue,
+                            'loop_index' => $index,
+                            'loop_count' => $count,
+                            'loop_first' => $index === 0,
+                            'loop_last' => $index === $count - 1,
+                        ],
+                    );
+                    $processedBody = $this->processIndexes($body, new Properties($scope));
+                    $output .= $this->resolveVariables($processedBody, new Properties($scope));
+
+                    // Apply increment
+                    $currentValue = $this->applyForIncrement($currentValue, $incrementType, $incrementValue);
+                    $index++;
+                }
+
+                return trim($output);
+            },
+            $template,
+        );
     }
 
     protected function resolveForEach(string $index, string $template, Properties $properties): string
@@ -209,6 +600,36 @@ class ControlSlot extends Slot
             },
             $template,
         );
+    }
+
+    protected function resolveForValue(string $value, Properties $properties): mixed
+    {
+        // Handle variable references
+        if (preg_match('/^\$(\w+)$/', $value, $matches)) {
+            return $properties->resolveValue(['variable' => $matches[1]]);
+        }
+
+        // Handle numeric literals
+        if (is_numeric($value)) {
+            return is_float($value + 0) ? (float)$value : (int)$value;
+        }
+
+        // Handle string literals
+        if (preg_match('/^["\'](.+)["\']$/', $value, $matches)) {
+            return $matches[1];
+        }
+
+        // Handle boolean literals
+        if (strtolower($value) === 'true') {
+            return true;
+        }
+
+        if (strtolower($value) === 'false') {
+            return false;
+        }
+
+        // Return as numeric if it looks like a number, otherwise as string
+        return is_numeric($value) ? (int)$value : $value;
     }
 
     protected function resolveIfStatement(string $index, string $template, Properties $properties): string
@@ -273,46 +694,6 @@ class ControlSlot extends Slot
         );
 
         return $this->resolveVariables($template, $properties);
-    }
-
-    /**
-     * @return array<int, array{type: string, condition: string, body: string}>
-     */
-    protected function parseIfBranches(string $body, string $index, string $ifCondition, string $elseifRegex, string $elseRegex): array
-    {
-        $branches = [];
-
-        // Split on elseif first
-        $elseifParts = preg_split($elseifRegex, $body, -1, PREG_SPLIT_DELIM_CAPTURE);
-
-        // First part is the if body
-        $ifBody = array_shift($elseifParts);
-
-        // Check if the if body contains an else
-        $ifParts = preg_split($elseRegex, (string) $ifBody, 2);
-        $branches[] = ['type' => 'if', 'condition' => $ifCondition, 'body' => $ifParts[0]];
-
-        if (count($ifParts) > 1) {
-            $branches[] = ['type' => 'else', 'condition' => '', 'body' => $ifParts[1]];
-            return $branches;
-        }
-
-        // Process elseif branches (condition, body pairs from the split)
-        while ($elseifParts !== []) {
-            $condition = (string) array_shift($elseifParts);
-            $branchBody = (string) array_shift($elseifParts);
-
-            // Check if this branch body contains an else
-            $branchParts = preg_split($elseRegex, $branchBody, 2);
-            $branches[] = ['type' => 'elseif', 'condition' => $condition, 'body' => $branchParts[0]];
-
-            if (count($branchParts) > 1) {
-                $branches[] = ['type' => 'else', 'condition' => '', 'body' => $branchParts[1]];
-                return $branches;
-            }
-        }
-
-        return $branches;
     }
 
     protected function resolveSwitch(string $index, string $template, Properties $properties): string
@@ -404,391 +785,10 @@ class ControlSlot extends Slot
         return $variable;
     }
 
-    /**
-     * @return array<int, array{type: string, value: string|null, body: string}>
-     */
-    protected function parseSwitchCases(string $body, string $index): array
+    protected function resolveVariables(string $template, Properties $properties): string
     {
-        $cases = [];
+        $template = new TernarySlot($this->engine)->process($template, $properties);
 
-        // Regex to find case statements
-        $caseRegex = [
-            '/',
-            Templex::PLACEHOLDER_OPEN,
-            '\s*',
-            'case' . $index,
-            '\s*\(',
-            '\s*',
-            '(?<value>.+?)',
-            '\s*',
-            '\)',
-            '\s*',
-            Templex::PLACEHOLDER_CLOSE,
-            '(?<body>.*?)(?=',
-            Templex::PLACEHOLDER_OPEN,
-            '\s*(?:case' . $index . '|default' . $index . '|endswitch' . $index . ')',
-            '|$)',
-            '/si',
-        ];
-
-        // Find all case statements
-        preg_match_all(implode('', $caseRegex), $body, $caseMatches, PREG_SET_ORDER);
-
-        foreach ($caseMatches as $caseMatch) {
-            $cases[] = [
-                'type' => 'case',
-                'value' => trim($caseMatch['value']),
-                'body' => $caseMatch['body'],
-            ];
-        }
-
-        // Regex to find default statement
-        $defaultRegex = [
-            '/',
-            Templex::PLACEHOLDER_OPEN,
-            '\s*',
-            'default' . $index,
-            '\s*',
-            Templex::PLACEHOLDER_CLOSE,
-            '(?<body>.*?)(?=',
-            Templex::PLACEHOLDER_OPEN,
-            '\s*(?:case' . $index . '|endswitch' . $index . ')',
-            '|$)',
-            '/si',
-        ];
-
-        if (preg_match(implode('', $defaultRegex), $body, $defaultMatch)) {
-            $cases[] = [
-                'type' => 'default',
-                'value' => null,
-                'body' => $defaultMatch['body'],
-            ];
-        }
-
-        return $cases;
-    }
-
-    protected function compareSwitchValues(mixed $switchValue, string $caseValue, Properties $properties): bool
-    {
-        $resolvedCaseValue = $this->resolveSwitchValue($caseValue, $properties);
-        return $switchValue === $resolvedCaseValue;
-    }
-
-    protected function resolveFor(string $index, string $template, Properties $properties): string
-    {
-        $regexParts = [
-            '/',
-            Templex::PLACEHOLDER_OPEN,
-            '\s*',
-            'for(?<index>' . $index . ')\(',
-            '\s*',
-            '(?<init>.+?);',
-            '\s*',
-            '(?<condition>.+?);',
-            '\s*',
-            '(?<increment>.+?)',
-            '\s*\)\s*',
-            Templex::PLACEHOLDER_CLOSE,
-            '\s*(?<body>.+)\s?',
-            Templex::PLACEHOLDER_OPEN,
-            '\s*',
-            'endfor\k<index>',
-            '\s*',
-            Templex::PLACEHOLDER_CLOSE,
-            '/si',
-        ];
-
-        return (string) preg_replace_callback(
-            implode('', $regexParts),
-            function (array $matches) use ($properties): string {
-                $init = trim($matches['init']);
-                $condition = trim($matches['condition']);
-                $increment = trim($matches['increment']);
-                $body = $matches['body'];
-
-                // Parse initialization (e.g., $i = 0)
-                $initParts = $this->parseForInit($init, $properties);
-                $loopVar = $initParts['variable'];
-                $startValue = $initParts['value'];
-
-                // Parse condition (e.g., $i < 10)
-                $conditionParts = $this->parseForCondition($condition);
-                $operator = $conditionParts['operator'];
-                $endValue = $this->resolveForValue($conditionParts['value'], $properties);
-
-                // Parse increment (e.g., $i++)
-                $incrementParts = $this->parseForIncrement($increment);
-                $incrementType = $incrementParts['type'];
-                $incrementValue = $incrementParts['value'];
-
-                $output = '';
-                $currentValue = $startValue;
-                $index = 0;
-
-                // Pre-calculate count for loop metadata
-                $countValue = $startValue;
-                $count = 0;
-                while ($this->evaluateForCondition($countValue, $operator, $endValue)) {
-                    $count++;
-                    $countValue = $this->applyForIncrement($countValue, $incrementType, $incrementValue);
-                }
-
-                // Execute the for loop
-                while ($this->evaluateForCondition($currentValue, $operator, $endValue)) {
-                    $scope = array_merge(
-                        $properties->variables(),
-                        [
-                            $loopVar => $currentValue,
-                            'loop_index' => $index,
-                            'loop_count' => $count,
-                            'loop_first' => $index === 0,
-                            'loop_last' => $index === $count - 1,
-                        ],
-                    );
-                    $processedBody = $this->processIndexes($body, new Properties($scope));
-                    $output .= $this->resolveVariables($processedBody, new Properties($scope));
-
-                    // Apply increment
-                    $currentValue = $this->applyForIncrement($currentValue, $incrementType, $incrementValue);
-                    $index++;
-                }
-
-                return trim($output);
-            },
-            $template,
-        );
-    }
-
-    /**
-     * @return array{variable: string, value: mixed}
-     */
-    protected function parseForInit(string $init, Properties $properties): array
-    {
-        // Parse patterns like: $i = 0, $i = $start, $counter = 1
-        if (preg_match('/^\$(\w+)\s*=\s*(.+)$/', $init, $matches)) {
-            $variable = $matches[1];
-            $value = $this->resolveForValue(trim($matches[2]), $properties);
-            return ['variable' => $variable, 'value' => $value];
-        }
-
-        throw new Exception('Invalid for loop initialization: ' . $init);
-    }
-
-    /**
-     * @return array{operator: string, value: string}
-     */
-    protected function parseForCondition(string $condition): array
-    {
-        // Parse patterns like: $i < 10, $i <= $max, $counter > 0
-        if (preg_match('/^\$\w+\s*([<>=!]+)\s*(.+)$/', $condition, $matches)) {
-            $operator = trim($matches[1]);
-            $value = trim($matches[2]);
-            return ['operator' => $operator, 'value' => $value];
-        }
-
-        throw new Exception('Invalid for loop condition: ' . $condition);
-    }
-
-    /**
-     * @return array{type: string, value: int}
-     */
-    protected function parseForIncrement(string $increment): array
-    {
-        // Parse patterns like: $i++, $i--, $i += 2, $i -= 1
-        if (preg_match('/^\$\w+\+\+$/', $increment)) {
-            return ['type' => '++', 'value' => 1];
-        }
-
-        if (preg_match('/^\$\w+--$/', $increment)) {
-            return ['type' => '--', 'value' => 1];
-        }
-
-        if (preg_match('/^\$\w+\s*\+=\s*(.+)$/', $increment, $matches)) {
-            return ['type' => '+=', 'value' => (int)trim($matches[1])];
-        }
-
-        if (preg_match('/^\$\w+\s*-=\s*(.+)$/', $increment, $matches)) {
-            return ['type' => '-=', 'value' => (int)trim($matches[1])];
-        }
-
-        throw new Exception('Invalid for loop increment: ' . $increment);
-    }
-
-    protected function resolveForValue(string $value, Properties $properties): mixed
-    {
-        // Handle variable references
-        if (preg_match('/^\$(\w+)$/', $value, $matches)) {
-            return $properties->resolveValue(['variable' => $matches[1]]);
-        }
-
-        // Handle numeric literals
-        if (is_numeric($value)) {
-            return is_float($value + 0) ? (float)$value : (int)$value;
-        }
-
-        // Handle string literals
-        if (preg_match('/^["\'](.+)["\']$/', $value, $matches)) {
-            return $matches[1];
-        }
-
-        // Handle boolean literals
-        if (strtolower($value) === 'true') {
-            return true;
-        }
-
-        if (strtolower($value) === 'false') {
-            return false;
-        }
-
-        // Return as numeric if it looks like a number, otherwise as string
-        return is_numeric($value) ? (int)$value : $value;
-    }
-
-    protected function evaluateForCondition(mixed $currentValue, string $operator, mixed $endValue): bool
-    {
-        return match ($operator) {
-            '<' => $currentValue < $endValue,
-            '<=' => $currentValue <= $endValue,
-            '>' => $currentValue > $endValue,
-            '>=' => $currentValue >= $endValue,
-            '==' => $currentValue == $endValue,
-            '===' => $currentValue === $endValue,
-            '!=' => $currentValue != $endValue,
-            '!==' => $currentValue !== $endValue,
-            default => throw new Exception('Unknown for loop operator: ' . $operator),
-        };
-    }
-
-    protected function applyForIncrement(mixed $currentValue, string $incrementType, mixed $incrementValue): mixed
-    {
-        return match ($incrementType) {
-            '++' => $currentValue + 1,
-            '--' => $currentValue - 1,
-            '+=' => $currentValue + $incrementValue,
-            '-=' => $currentValue - $incrementValue,
-            default => throw new Exception('Unknown increment type: ' . $incrementType),
-        };
-    }
-
-    /**
-     * @throws VariableNotFoundException
-     * @throws UnmatchedComparisonException
-     */
-    protected function resolveCondition(string $condition, Properties $properties): bool
-    {
-        // Handle logical OR (||) — split and short-circuit on first true
-        if (preg_match('/\|\|/', $condition)) {
-            $parts = preg_split('/\s*\|\|\s*/', $condition);
-            foreach ($parts as $part) {
-                if ($this->resolveCondition(trim($part), $properties)) {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        // Handle logical AND (&&) — split and short-circuit on first false
-        if (preg_match('/&&/', $condition)) {
-            $parts = preg_split('/\s*&&\s*/', $condition);
-            foreach ($parts as $part) {
-                if (!$this->resolveCondition(trim($part), $properties)) {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        // Handle negation (!) — negate the inner expression
-        if (preg_match('/^!\s*(.+)$/', $condition, $negMatches)) {
-            return !$this->resolveCondition(trim($negMatches[1]), $properties);
-        }
-
-        $simpleComparisonRegex = [
-            'self' => '/^\$(?<variable>\w+)\s?$/si',
-            'boolean' => '/^(?<boolean>true|false)\s?$/si',
-            'comparison' =>
-                '/^' .
-                '(' .
-                '((?<first_is_literal>[\"\'])(?<first_literal_value>[\w]+)(\k<first_is_literal>))|' .
-                '(((?<first_is_variable>[\$]){1}|(?<first_is_number>[\d]))' .
-                '(?<first_value>\w*))' .
-                ')' .
-                '((?:\s?)(?<operators>[=!><]+)(?:\s?))' .
-                '(' .
-                '((?<second_is_literal>[\"\'])(?<second_literal_value>[\w]+)(\k<second_is_literal>))|' .
-                '(((?<second_is_variable>[\$]){1}|(?<second_is_number>[\d]))' .
-                '(?<second_value>\w*))' .
-                ')' .
-                '$/si',
-        ];
-
-        foreach ($simpleComparisonRegex as $conditionType => $comparisonRegex) {
-            if (preg_match($comparisonRegex, $condition, $matches, PREG_UNMATCHED_AS_NULL)) {
-                switch ($conditionType) {
-                    case 'self':
-                        $value = $properties->resolveValue(['variable' => $matches['variable']]);
-                        if (!in_array(mb_strtolower((string) $value), ['true', 'false', '0', '1'], true) && !empty($value)) {
-                            return true;
-                        }
-
-                        return  boolval((int)filter_var($value, FILTER_VALIDATE_BOOLEAN));
-                    case 'boolean':
-                        return boolval((int)filter_var($matches['boolean'], FILTER_VALIDATE_BOOLEAN));
-                    case 'comparison':
-                        return $this->resolveComparison($matches, $properties);
-                }
-            }
-        }
-
-        throw new UnmatchedComparisonException(sprintf('Unable to resolve condition "%s"', $condition));
-    }
-
-    /**
-     * @param array<int|string, string|null> $matches
-     */
-    protected function resolveComparison(array $matches, Properties $properties): bool
-    {
-        $firstIsLiteral = isset($matches['first_is_literal']);
-        $firstIsVar = isset($matches['first_is_variable']);
-        $firstIsNumber = isset($matches['first_is_number']);
-
-        $secondIsLiteral = isset($matches['second_is_literal']);
-        $secondIsVar = isset($matches['second_is_variable']);
-        $secondIsNumber = isset($matches['second_is_number']);
-
-        $operation = $matches['operators'];
-
-        $firstValue = null;
-        $secondValue = null;
-
-        if ($firstIsVar) {
-            $firstValue = $properties->resolveValue(['variable' => $matches['first_value']]);
-        } elseif ($firstIsNumber) {
-            $firstValue = (int) ($matches['first_is_number'] . $matches['first_value']);
-        } elseif ($firstIsLiteral) {
-            $firstValue = $matches['first_literal_value'];
-        }
-
-        if ($secondIsVar) {
-            $secondValue = $properties->resolveValue(['variable' => $matches['second_value']]);
-        } elseif ($secondIsNumber) {
-            $secondValue = (int) ($matches['second_is_number'] . $matches['second_value']);
-        } elseif ($secondIsLiteral) {
-            $secondValue = $matches['second_literal_value'];
-        }
-
-        return match ($operation) {
-            '==' => $firstValue == $secondValue,
-            '===' => $firstValue === $secondValue,
-            '!=' => $firstValue != $secondValue,
-            '!==' => $firstValue !== $secondValue,
-            '>' => $firstValue > $secondValue,
-            '<' => $firstValue < $secondValue,
-            '>=' => $firstValue >= $secondValue,
-            '<=' => $firstValue <= $secondValue,
-            default => throw new Exception('Unknown comparison operator found ' . $operation),
-        };
+        return new VariableSlot($this->engine)->process($template, $properties);
     }
 }

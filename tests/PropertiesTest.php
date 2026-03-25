@@ -16,17 +16,17 @@ final class PropertiesTest extends TestCase
         $this->assertEquals(['Fred', 'Tor', 'Chris'], $properties->resolveValue(['variable' => 'Users']));
     }
 
-    public function testPropertiesThrowsExceptionIfNotFound(): void
-    {
-        $properties = new Properties(['Users' => ['Fred', 'Tor', 'Chris']]);
-        $this->expectException(VariableNotFoundException::class);
-        $properties->resolveValue(['variable' => 'name']);
-    }
-
     public function testPropertiesReturnsVariables(): void
     {
         $data = ['name' => 'Fred', 'age' => 30];
         $properties = new Properties($data);
         $this->assertSame($data, $properties->variables());
+    }
+
+    public function testPropertiesThrowsExceptionIfNotFound(): void
+    {
+        $properties = new Properties(['Users' => ['Fred', 'Tor', 'Chris']]);
+        $this->expectException(VariableNotFoundException::class);
+        $properties->resolveValue(['variable' => 'name']);
     }
 }

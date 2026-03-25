@@ -12,13 +12,13 @@ readonly class RawFileStub implements StubInterface
     ) {
     }
 
-    public function name(): string
-    {
-        return $this->name;
-    }
-
     public function content(): string
     {
         return $this->rawContent;
+    }
+
+    public function name(): string
+    {
+        return $this->name;
     }
 }

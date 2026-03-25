@@ -13,11 +13,6 @@ class Stub extends AbstractStub implements StubInterface
         //
     }
 
-    public function path(): string
-    {
-        return $this->path;
-    }
-
     /**
      * @throws TemplateNotFoundException
      */
@@ -28,5 +23,10 @@ class Stub extends AbstractStub implements StubInterface
         }
 
         throw new TemplateNotFoundException(sprintf('Template %s not found', $this->name));
+    }
+
+    public function path(): string
+    {
+        return $this->path;
     }
 }

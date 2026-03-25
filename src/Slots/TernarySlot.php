@@ -15,6 +15,39 @@ class TernarySlot extends Slot
         return $this->resolveTernary($template, $properties);
     }
 
+    protected function evaluateTruthiness(mixed $value): bool
+    {
+        if (is_string($value)) {
+            if (in_array(mb_strtolower($value), ['false', '0'], true)) {
+                return false;
+            }
+
+            return $value !== '';
+        }
+
+        return (bool) $value;
+    }
+
+    protected function resolveLiteral(string $literal, Properties $properties): string
+    {
+        // Variable reference
+        if (preg_match('/^\$(\w+)$/', $literal, $matches)) {
+            try {
+                return (string) $properties->resolveValue(['variable' => $matches[1]]);
+            } catch (VariableNotFoundException) {
+                return '';
+            }
+        }
+
+        // String literal (single or double quotes)
+        if (preg_match('/^["\'](.*)["\']\s*$/', $literal, $matches)) {
+            return $matches[1];
+        }
+
+        // Numeric or bare value
+        return $literal;
+    }
+
     protected function resolveNullCoalescing(string $template, Properties $properties): string
     {
         $regex = '/' .
@@ -63,38 +96,5 @@ class TernarySlot extends Slot
             },
             $template,
         );
-    }
-
-    protected function evaluateTruthiness(mixed $value): bool
-    {
-        if (is_string($value)) {
-            if (in_array(mb_strtolower($value), ['false', '0'], true)) {
-                return false;
-            }
-
-            return $value !== '';
-        }
-
-        return (bool) $value;
-    }
-
-    protected function resolveLiteral(string $literal, Properties $properties): string
-    {
-        // Variable reference
-        if (preg_match('/^\$(\w+)$/', $literal, $matches)) {
-            try {
-                return (string) $properties->resolveValue(['variable' => $matches[1]]);
-            } catch (VariableNotFoundException) {
-                return '';
-            }
-        }
-
-        // String literal (single or double quotes)
-        if (preg_match('/^["\'](.*)["\']\s*$/', $literal, $matches)) {
-            return $matches[1];
-        }
-
-        // Numeric or bare value
-        return $literal;
     }
 }

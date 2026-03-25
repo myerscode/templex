@@ -27,6 +27,24 @@ final class ControlSlotElseifTest extends TestCase
         $this->assertStringNotContainsString('Guest', $result);
     }
 
+    public function testElseifFallsToElse(): void
+    {
+        $raw = '
+        <{ if( $role === "admin" ) }>
+            Admin
+        <{ elseif( $role === "editor" ) }>
+            Editor
+        <{ else }>
+            Guest
+        <{ endif }>
+        ';
+
+        $result = $this->render->compile($this->rawStub($raw), new Properties(['role' => 'viewer']));
+        $this->assertStringContainsString('Guest', $result);
+        $this->assertStringNotContainsString('Admin', $result);
+        $this->assertStringNotContainsString('Editor', $result);
+    }
+
     public function testElseifFirstBranchMatches(): void
     {
         $raw = '
@@ -45,22 +63,68 @@ final class ControlSlotElseifTest extends TestCase
         $this->assertStringNotContainsString('Guest', $result);
     }
 
-    public function testElseifFallsToElse(): void
+    public function testElseifNoMatchNoElse(): void
     {
         $raw = '
-        <{ if( $role === "admin" ) }>
-            Admin
-        <{ elseif( $role === "editor" ) }>
-            Editor
-        <{ else }>
-            Guest
+        <{ if( $val === 1 ) }>
+            One
+        <{ elseif( $val === 2 ) }>
+            Two
         <{ endif }>
         ';
 
-        $result = $this->render->compile($this->rawStub($raw), new Properties(['role' => 'viewer']));
-        $this->assertStringContainsString('Guest', $result);
+        $result = $this->render->compile($this->rawStub($raw), new Properties(['val' => 99]));
+        $this->assertStringNotContainsString('One', $result);
+        $this->assertStringNotContainsString('Two', $result);
+    }
+
+    public function testElseifWithBooleanSelf(): void
+    {
+        $raw = '
+        <{ if( $admin ) }>
+            Admin
+        <{ elseif( $editor ) }>
+            Editor
+        <{ else }>
+            User
+        <{ endif }>
+        ';
+
+        $result = $this->render->compile($this->rawStub($raw), new Properties(['admin' => false, 'editor' => true]));
+        $this->assertStringContainsString('Editor', $result);
         $this->assertStringNotContainsString('Admin', $result);
-        $this->assertStringNotContainsString('Editor', $result);
+        $this->assertStringNotContainsString('User', $result);
+    }
+
+    public function testElseifWithoutElse(): void
+    {
+        $raw = '
+        <{ if( $val === 1 ) }>
+            One
+        <{ elseif( $val === 2 ) }>
+            Two
+        <{ endif }>
+        ';
+
+        $result = $this->render->compile($this->rawStub($raw), new Properties(['val' => 2]));
+        $this->assertStringContainsString('Two', $result);
+        $this->assertStringNotContainsString('One', $result);
+    }
+
+    public function testElseifWithVariableComparison(): void
+    {
+        $raw = '
+        <{ if( $status === "active" ) }>
+            Active
+        <{ elseif( $status === "pending" ) }>
+            Pending
+        <{ elseif( $status === "disabled" ) }>
+            Disabled
+        <{ endif }>
+        ';
+
+        $result = $this->render->compile($this->rawStub($raw), new Properties(['status' => 'pending']));
+        $this->assertStringContainsString('Pending', $result);
     }
 
     public function testMultipleElseifBranches(): void
@@ -82,70 +146,6 @@ final class ControlSlotElseifTest extends TestCase
         $this->assertStringNotContainsString('One', $result);
         $this->assertStringNotContainsString('Two', $result);
         $this->assertStringNotContainsString('Other', $result);
-    }
-
-    public function testElseifWithoutElse(): void
-    {
-        $raw = '
-        <{ if( $val === 1 ) }>
-            One
-        <{ elseif( $val === 2 ) }>
-            Two
-        <{ endif }>
-        ';
-
-        $result = $this->render->compile($this->rawStub($raw), new Properties(['val' => 2]));
-        $this->assertStringContainsString('Two', $result);
-        $this->assertStringNotContainsString('One', $result);
-    }
-
-    public function testElseifNoMatchNoElse(): void
-    {
-        $raw = '
-        <{ if( $val === 1 ) }>
-            One
-        <{ elseif( $val === 2 ) }>
-            Two
-        <{ endif }>
-        ';
-
-        $result = $this->render->compile($this->rawStub($raw), new Properties(['val' => 99]));
-        $this->assertStringNotContainsString('One', $result);
-        $this->assertStringNotContainsString('Two', $result);
-    }
-
-    public function testElseifWithVariableComparison(): void
-    {
-        $raw = '
-        <{ if( $status === "active" ) }>
-            Active
-        <{ elseif( $status === "pending" ) }>
-            Pending
-        <{ elseif( $status === "disabled" ) }>
-            Disabled
-        <{ endif }>
-        ';
-
-        $result = $this->render->compile($this->rawStub($raw), new Properties(['status' => 'pending']));
-        $this->assertStringContainsString('Pending', $result);
-    }
-
-    public function testElseifWithBooleanSelf(): void
-    {
-        $raw = '
-        <{ if( $admin ) }>
-            Admin
-        <{ elseif( $editor ) }>
-            Editor
-        <{ else }>
-            User
-        <{ endif }>
-        ';
-
-        $result = $this->render->compile($this->rawStub($raw), new Properties(['admin' => false, 'editor' => true]));
-        $this->assertStringContainsString('Editor', $result);
-        $this->assertStringNotContainsString('Admin', $result);
-        $this->assertStringNotContainsString('User', $result);
     }
 
     public function testNestedIfInsideElseif(): void

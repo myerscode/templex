@@ -53,63 +53,6 @@ final class ControlSlotLogicalTest extends TestCase
         $this->assertStringContainsString('fail', $result);
     }
 
-    public function testOrBothFalse(): void
-    {
-        $raw = '
-        <{ if( $a || $b ) }>
-            pass
-        <{ else }>
-            fail
-        <{ endif }>
-        ';
-
-        $result = $this->render->compile($this->rawStub($raw), new Properties(['a' => false, 'b' => false]));
-        $this->assertStringContainsString('fail', $result);
-        $this->assertStringNotContainsString('pass', $result);
-    }
-
-    public function testOrFirstTrue(): void
-    {
-        $raw = '
-        <{ if( $a || $b ) }>
-            pass
-        <{ else }>
-            fail
-        <{ endif }>
-        ';
-
-        $result = $this->render->compile($this->rawStub($raw), new Properties(['a' => true, 'b' => false]));
-        $this->assertStringContainsString('pass', $result);
-    }
-
-    public function testOrSecondTrue(): void
-    {
-        $raw = '
-        <{ if( $a || $b ) }>
-            pass
-        <{ else }>
-            fail
-        <{ endif }>
-        ';
-
-        $result = $this->render->compile($this->rawStub($raw), new Properties(['a' => false, 'b' => true]));
-        $this->assertStringContainsString('pass', $result);
-    }
-
-    public function testOrBothTrue(): void
-    {
-        $raw = '
-        <{ if( $a || $b ) }>
-            pass
-        <{ else }>
-            fail
-        <{ endif }>
-        ';
-
-        $result = $this->render->compile($this->rawStub($raw), new Properties(['a' => true, 'b' => true]));
-        $this->assertStringContainsString('pass', $result);
-    }
-
     public function testAndWithComparisons(): void
     {
         $raw = '
@@ -124,40 +67,6 @@ final class ControlSlotLogicalTest extends TestCase
         $this->assertStringContainsString('pass', $result);
 
         $result = $this->render->compile($this->rawStub($raw), new Properties(['age' => 15, 'role' => 'admin']));
-        $this->assertStringContainsString('fail', $result);
-    }
-
-    public function testOrWithComparisons(): void
-    {
-        $raw = '
-        <{ if( $role === "admin" || $role === "editor" ) }>
-            pass
-        <{ else }>
-            fail
-        <{ endif }>
-        ';
-
-        $result = $this->render->compile($this->rawStub($raw), new Properties(['role' => 'editor']));
-        $this->assertStringContainsString('pass', $result);
-
-        $result = $this->render->compile($this->rawStub($raw), new Properties(['role' => 'viewer']));
-        $this->assertStringContainsString('fail', $result);
-    }
-
-    public function testTripleAnd(): void
-    {
-        $raw = '
-        <{ if( $a && $b && $c ) }>
-            pass
-        <{ else }>
-            fail
-        <{ endif }>
-        ';
-
-        $result = $this->render->compile($this->rawStub($raw), new Properties(['a' => true, 'b' => true, 'c' => true]));
-        $this->assertStringContainsString('pass', $result);
-
-        $result = $this->render->compile($this->rawStub($raw), new Properties(['a' => true, 'b' => true, 'c' => false]));
         $this->assertStringContainsString('fail', $result);
     }
 
@@ -196,5 +105,96 @@ final class ControlSlotLogicalTest extends TestCase
         $this->assertStringContainsString('SUPER:admin', $result);
         $this->assertStringContainsString('USER:fred', $result);
         $this->assertStringContainsString('SUPER:root', $result);
+    }
+
+    public function testOrBothFalse(): void
+    {
+        $raw = '
+        <{ if( $a || $b ) }>
+            pass
+        <{ else }>
+            fail
+        <{ endif }>
+        ';
+
+        $result = $this->render->compile($this->rawStub($raw), new Properties(['a' => false, 'b' => false]));
+        $this->assertStringContainsString('fail', $result);
+        $this->assertStringNotContainsString('pass', $result);
+    }
+
+    public function testOrBothTrue(): void
+    {
+        $raw = '
+        <{ if( $a || $b ) }>
+            pass
+        <{ else }>
+            fail
+        <{ endif }>
+        ';
+
+        $result = $this->render->compile($this->rawStub($raw), new Properties(['a' => true, 'b' => true]));
+        $this->assertStringContainsString('pass', $result);
+    }
+
+    public function testOrFirstTrue(): void
+    {
+        $raw = '
+        <{ if( $a || $b ) }>
+            pass
+        <{ else }>
+            fail
+        <{ endif }>
+        ';
+
+        $result = $this->render->compile($this->rawStub($raw), new Properties(['a' => true, 'b' => false]));
+        $this->assertStringContainsString('pass', $result);
+    }
+
+    public function testOrSecondTrue(): void
+    {
+        $raw = '
+        <{ if( $a || $b ) }>
+            pass
+        <{ else }>
+            fail
+        <{ endif }>
+        ';
+
+        $result = $this->render->compile($this->rawStub($raw), new Properties(['a' => false, 'b' => true]));
+        $this->assertStringContainsString('pass', $result);
+    }
+
+    public function testOrWithComparisons(): void
+    {
+        $raw = '
+        <{ if( $role === "admin" || $role === "editor" ) }>
+            pass
+        <{ else }>
+            fail
+        <{ endif }>
+        ';
+
+        $result = $this->render->compile($this->rawStub($raw), new Properties(['role' => 'editor']));
+        $this->assertStringContainsString('pass', $result);
+
+        $result = $this->render->compile($this->rawStub($raw), new Properties(['role' => 'viewer']));
+        $this->assertStringContainsString('fail', $result);
+    }
+
+    public function testTripleAnd(): void
+    {
+        $raw = '
+        <{ if( $a && $b && $c ) }>
+            pass
+        <{ else }>
+            fail
+        <{ endif }>
+        ';
+
+        $result = $this->render->compile($this->rawStub($raw), new Properties(['a' => true, 'b' => true, 'c' => true]));
+        $this->assertStringContainsString('pass', $result);
+
+        $result = $this->render->compile($this->rawStub($raw), new Properties(['a' => true, 'b' => true, 'c' => false]));
+        $this->assertStringContainsString('fail', $result);
     }
 }

@@ -9,6 +9,15 @@ use Myerscode\Templex\Stub;
 
 final class StubTest extends TestCase
 {
+    public function testCanGetContent(): void
+    {
+        $path = __DIR__ . '/Resources/Templates/text-only.stub';
+        $name = 'loop';
+
+        $stub = new Stub($name, $path);
+
+        $this->assertEquals(file_get_contents($path), $stub->content());
+    }
     public function testStubStoresProperties(): void
     {
         $path = __DIR__ . '/Resources/Templates/loop.stub';
@@ -18,16 +27,6 @@ final class StubTest extends TestCase
 
         $this->assertSame($path, $stub->path());
         $this->assertSame($name, $stub->name());
-    }
-
-    public function testCanGetContent(): void
-    {
-        $path = __DIR__ . '/Resources/Templates/text-only.stub';
-        $name = 'loop';
-
-        $stub = new Stub($name, $path);
-
-        $this->assertEquals(file_get_contents($path), $stub->content());
     }
 
     public function testThrowsExceptionIfStubDoesNotExist(): void

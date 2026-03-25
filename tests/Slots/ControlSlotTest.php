@@ -12,6 +12,12 @@ use Tests\TestCase;
 
 final class ControlSlotTest extends TestCase
 {
+    public static function falselyProvider(): Iterator
+    {
+        yield 'true string' => ['false'];
+        yield 'true bool' => [false];
+        yield 'true int' => [0];
+    }
     public static function operatorProvider(): Iterator
     {
         yield '== pass' => ['==', "'a'", "'a'", 'pass'];
@@ -47,68 +53,6 @@ final class ControlSlotTest extends TestCase
         yield 'true int' => [1];
         yield 'word' => ['fred'];
         yield 'number' => [49];
-    }
-
-    public static function falselyProvider(): Iterator
-    {
-        yield 'true string' => ['false'];
-        yield 'true bool' => [false];
-        yield 'true int' => [0];
-    }
-
-    public function testHandlesComparisons(): void
-    {
-        $data = [
-            'name' => 'Fred',
-            'value' => true,
-            'trueValue' => true,
-            'falseValue' => false,
-            'selfTrueValue' => true,
-            'selfFalseValue' => false,
-            'a' => '1',
-            'b' => '1',
-            'c' => 1,
-            'd' => 7,
-            'e' => 7,
-        ];
-
-        $result = $this->render->render('condition.stub', $data);
-
-        $this->assertSame($this->expectedContent('condition.stub'), $result);
-    }
-
-    #[DataProvider('truthyProvider')]
-    public function testHandlesSelfTruthyComparison(string|bool|int $var): void
-    {
-        $raw = '
-        <{ if ( $var ) }>
-            Value was ' . $var . '
-        <{ endif }>
-        ';
-
-        $expected = '
-        Value was ' . $var . '
-        ';
-
-        $result = $this->render->compile($this->rawStub($raw), new Properties(['var' => $var]));
-        $this->assertSame($expected, $result);
-    }
-
-    #[DataProvider('falselyProvider')]
-    public function testHandlesSelfFalselyComparison(string|bool|int $var): void
-    {
-        $raw = '
-        <{ if ( $var ) }>
-            Value was ' . $var . '
-        <{ endif }>
-        ';
-
-        $expected = '
-        
-        ';
-
-        $result = $this->render->compile($this->rawStub($raw), new Properties(['var' => $var]));
-        $this->assertSame($expected, $result);
     }
 
     public function testHandlesBoolComparison(): void
@@ -160,10 +104,59 @@ final class ControlSlotTest extends TestCase
         $this->assertSame($expected, $result);
     }
 
-    public function testThrowsErrorOnUnmatchedComparisons(): void
+    public function testHandlesComparisons(): void
     {
-        $this->expectException(UnmatchedComparisonException::class);
-        $this->render->render('unmatched-condition.stub');
+        $data = [
+            'name' => 'Fred',
+            'value' => true,
+            'trueValue' => true,
+            'falseValue' => false,
+            'selfTrueValue' => true,
+            'selfFalseValue' => false,
+            'a' => '1',
+            'b' => '1',
+            'c' => 1,
+            'd' => 7,
+            'e' => 7,
+        ];
+
+        $result = $this->render->render('condition.stub', $data);
+
+        $this->assertSame($this->expectedContent('condition.stub'), $result);
+    }
+
+    #[DataProvider('falselyProvider')]
+    public function testHandlesSelfFalselyComparison(string|bool|int $var): void
+    {
+        $raw = '
+        <{ if ( $var ) }>
+            Value was ' . $var . '
+        <{ endif }>
+        ';
+
+        $expected = '
+        
+        ';
+
+        $result = $this->render->compile($this->rawStub($raw), new Properties(['var' => $var]));
+        $this->assertSame($expected, $result);
+    }
+
+    #[DataProvider('truthyProvider')]
+    public function testHandlesSelfTruthyComparison(string|bool|int $var): void
+    {
+        $raw = '
+        <{ if ( $var ) }>
+            Value was ' . $var . '
+        <{ endif }>
+        ';
+
+        $expected = '
+        Value was ' . $var . '
+        ';
+
+        $result = $this->render->compile($this->rawStub($raw), new Properties(['var' => $var]));
+        $this->assertSame($expected, $result);
     }
 
     public function testRenderWithSimpleLoop(): void
@@ -179,17 +172,10 @@ final class ControlSlotTest extends TestCase
         $this->assertSame($this->expectedContent('loop.stub'), $result);
     }
 
-    public function testWhiteSpaceThreshold(): void
+    public function testThrowsErrorOnUnmatchedComparisons(): void
     {
-        $data = [
-            'Users' => ['Fred', 'Chris', 'Tor'],
-            'abc' => ['a', 'b', 'c'],
-            'xyz' => ['x', 'y', 'z'],
-        ];
-
-        $result = $this->render->render('white-space-loop.stub', $data);
-
-        $this->assertSame($this->expectedContent('loop.stub'), $result);
+        $this->expectException(UnmatchedComparisonException::class);
+        $this->render->render('unmatched-condition.stub');
     }
 
     public function testWhiteSpaceOfConditions(): void
@@ -202,6 +188,19 @@ final class ControlSlotTest extends TestCase
         $result = $this->render->render('white-space-condition', $data);
 
         $this->assertSame($this->expectedContent('white-space-condition.stub'), $result);
+    }
+
+    public function testWhiteSpaceThreshold(): void
+    {
+        $data = [
+            'Users' => ['Fred', 'Chris', 'Tor'],
+            'abc' => ['a', 'b', 'c'],
+            'xyz' => ['x', 'y', 'z'],
+        ];
+
+        $result = $this->render->render('white-space-loop.stub', $data);
+
+        $this->assertSame($this->expectedContent('loop.stub'), $result);
     }
 
 }

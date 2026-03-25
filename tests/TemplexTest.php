@@ -22,19 +22,19 @@ final class TemplexTest extends TestCase
     }
 
 
-    public function testSetsDefaultExtensions(): void
-    {
-        $templex = new Templex(__DIR__ . '/Resources/Templates/');
-
-        $this->assertSame(['stub', 'template'], $templex->stubManager()->templateExtensions());
-    }
-
-
 
     public function testSanitisesExtensions(): void
     {
         $templex = new Templex(__DIR__ . '/Resources/Templates/', '.stub,   template,  .tmpl,stub');
 
         $this->assertSame(['stub', 'template', 'tmpl'], $templex->stubManager()->templateExtensions());
+    }
+
+
+    public function testSetsDefaultExtensions(): void
+    {
+        $templex = new Templex(__DIR__ . '/Resources/Templates/');
+
+        $this->assertSame(['stub', 'template'], $templex->stubManager()->templateExtensions());
     }
 }

@@ -9,77 +9,6 @@ use Tests\TestCase;
 
 final class ControlSlotNegationTest extends TestCase
 {
-    public function testNegationOfTruthyVariable(): void
-    {
-        $raw = '
-        <{ if( !$active ) }>
-            inactive
-        <{ else }>
-            active
-        <{ endif }>
-        ';
-
-        $result = $this->render->compile($this->rawStub($raw), new Properties(['active' => true]));
-        $this->assertStringContainsString('active', $result);
-        $this->assertStringNotContainsString('inactive', $result);
-    }
-
-    public function testNegationOfFalsyVariable(): void
-    {
-        $raw = '
-        <{ if( !$active ) }>
-            inactive
-        <{ else }>
-            active
-        <{ endif }>
-        ';
-
-        $result = $this->render->compile($this->rawStub($raw), new Properties(['active' => false]));
-        $this->assertStringContainsString('inactive', $result);
-    }
-
-    public function testNegationOfBooleanLiteral(): void
-    {
-        $raw = '
-        <{ if( !false ) }>
-            pass
-        <{ else }>
-            fail
-        <{ endif }>
-        ';
-
-        $result = $this->render->compile($this->rawStub($raw), new Properties([]));
-        $this->assertStringContainsString('pass', $result);
-    }
-
-    public function testNegationOfTrueLiteral(): void
-    {
-        $raw = '
-        <{ if( !true ) }>
-            pass
-        <{ else }>
-            fail
-        <{ endif }>
-        ';
-
-        $result = $this->render->compile($this->rawStub($raw), new Properties([]));
-        $this->assertStringContainsString('fail', $result);
-    }
-
-    public function testNegationWithSpaces(): void
-    {
-        $raw = '
-        <{ if( ! $disabled ) }>
-            enabled
-        <{ else }>
-            disabled
-        <{ endif }>
-        ';
-
-        $result = $this->render->compile($this->rawStub($raw), new Properties(['disabled' => false]));
-        $this->assertStringContainsString('enabled', $result);
-    }
-
     public function testNegationInElseif(): void
     {
         $raw = '
@@ -96,6 +25,81 @@ final class ControlSlotNegationTest extends TestCase
         $this->assertStringContainsString('User', $result);
         $this->assertStringNotContainsString('Admin', $result);
         $this->assertStringNotContainsString('Banned', $result);
+    }
+
+    public function testNegationInsideLoop(): void
+    {
+        $raw = '
+        <{ foreach( $items as $item ) }>
+            <{ if( !$item ) }>
+                EMPTY
+            <{ else }>
+                <{ $item }>
+            <{ endif }>
+        <{ endforeach }>
+        ';
+
+        $data = ['items' => ['hello', false, 'world']];
+        $result = $this->render->compile($this->rawStub($raw), new Properties($data));
+        $this->assertStringContainsString('hello', $result);
+        $this->assertStringContainsString('EMPTY', $result);
+        $this->assertStringContainsString('world', $result);
+    }
+
+    public function testNegationOfBooleanLiteral(): void
+    {
+        $raw = '
+        <{ if( !false ) }>
+            pass
+        <{ else }>
+            fail
+        <{ endif }>
+        ';
+
+        $result = $this->render->compile($this->rawStub($raw), new Properties([]));
+        $this->assertStringContainsString('pass', $result);
+    }
+
+    public function testNegationOfFalsyVariable(): void
+    {
+        $raw = '
+        <{ if( !$active ) }>
+            inactive
+        <{ else }>
+            active
+        <{ endif }>
+        ';
+
+        $result = $this->render->compile($this->rawStub($raw), new Properties(['active' => false]));
+        $this->assertStringContainsString('inactive', $result);
+    }
+
+    public function testNegationOfTrueLiteral(): void
+    {
+        $raw = '
+        <{ if( !true ) }>
+            pass
+        <{ else }>
+            fail
+        <{ endif }>
+        ';
+
+        $result = $this->render->compile($this->rawStub($raw), new Properties([]));
+        $this->assertStringContainsString('fail', $result);
+    }
+    public function testNegationOfTruthyVariable(): void
+    {
+        $raw = '
+        <{ if( !$active ) }>
+            inactive
+        <{ else }>
+            active
+        <{ endif }>
+        ';
+
+        $result = $this->render->compile($this->rawStub($raw), new Properties(['active' => true]));
+        $this->assertStringContainsString('active', $result);
+        $this->assertStringNotContainsString('inactive', $result);
     }
 
     public function testNegationWithLogicalAnd(): void
@@ -132,22 +136,17 @@ final class ControlSlotNegationTest extends TestCase
         $this->assertStringContainsString('fail', $result);
     }
 
-    public function testNegationInsideLoop(): void
+    public function testNegationWithSpaces(): void
     {
         $raw = '
-        <{ foreach( $items as $item ) }>
-            <{ if( !$item ) }>
-                EMPTY
-            <{ else }>
-                <{ $item }>
-            <{ endif }>
-        <{ endforeach }>
+        <{ if( ! $disabled ) }>
+            enabled
+        <{ else }>
+            disabled
+        <{ endif }>
         ';
 
-        $data = ['items' => ['hello', false, 'world']];
-        $result = $this->render->compile($this->rawStub($raw), new Properties($data));
-        $this->assertStringContainsString('hello', $result);
-        $this->assertStringContainsString('EMPTY', $result);
-        $this->assertStringContainsString('world', $result);
+        $result = $this->render->compile($this->rawStub($raw), new Properties(['disabled' => false]));
+        $this->assertStringContainsString('enabled', $result);
     }
 }
