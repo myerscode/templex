@@ -52,7 +52,7 @@ class Templex
     }
 
     /**
-     * @param array<int, class-string> $slots
+     * @param array<int, class-string<SlotInterface>> $slots
      */
     public function setSlots(array $slots): void
     {

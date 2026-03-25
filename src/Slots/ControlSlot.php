@@ -206,13 +206,13 @@ class ControlSlot extends Slot
         $branches = [];
 
         // Split on elseif first
-        $elseifParts = preg_split($elseifRegex, $body, -1, PREG_SPLIT_DELIM_CAPTURE);
+        $elseifParts = preg_split($elseifRegex, $body, -1, PREG_SPLIT_DELIM_CAPTURE) ?: [];
 
         // First part is the if body
         $ifBody = array_shift($elseifParts);
 
         // Check if the if body contains an else
-        $ifParts = preg_split($elseRegex, (string) $ifBody, 2);
+        $ifParts = preg_split($elseRegex, (string) $ifBody, 2) ?: [(string) $ifBody];
         $branches[] = ['type' => 'if', 'condition' => $ifCondition, 'body' => $ifParts[0]];
 
         if (count($ifParts) > 1) {
@@ -226,7 +226,7 @@ class ControlSlot extends Slot
             $branchBody = (string) array_shift($elseifParts);
 
             // Check if this branch body contains an else
-            $branchParts = preg_split($elseRegex, $branchBody, 2);
+            $branchParts = preg_split($elseRegex, $branchBody, 2) ?: [$branchBody];
             $branches[] = ['type' => 'elseif', 'condition' => $condition, 'body' => $branchParts[0]];
 
             if (count($branchParts) > 1) {
@@ -379,7 +379,7 @@ class ControlSlot extends Slot
     {
         // Handle logical OR (||) — split and short-circuit on first true
         if (preg_match('/\|\|/', $condition)) {
-            $parts = preg_split('/\s*\|\|\s*/', $condition);
+            $parts = preg_split('/\s*\|\|\s*/', $condition) ?: [];
             foreach ($parts as $part) {
                 if ($this->resolveCondition(trim($part), $properties)) {
                     return true;
@@ -391,7 +391,7 @@ class ControlSlot extends Slot
 
         // Handle logical AND (&&) — split and short-circuit on first false
         if (preg_match('/&&/', $condition)) {
-            $parts = preg_split('/\s*&&\s*/', $condition);
+            $parts = preg_split('/\s*&&\s*/', $condition) ?: [];
             foreach ($parts as $part) {
                 if (!$this->resolveCondition(trim($part), $properties)) {
                     return false;
@@ -429,14 +429,14 @@ class ControlSlot extends Slot
             if (preg_match($comparisonRegex, $condition, $matches, PREG_UNMATCHED_AS_NULL)) {
                 switch ($conditionType) {
                     case 'self':
-                        $value = $properties->resolveValue(['variable' => $matches['variable']]);
+                        $value = $properties->resolveValue(['variable' => (string) ($matches['variable'] ?? '')]);
                         if (!in_array(mb_strtolower((string) $value), ['true', 'false', '0', '1'], true) && !empty($value)) {
                             return true;
                         }
 
                         return  boolval((int)filter_var($value, FILTER_VALIDATE_BOOLEAN));
                     case 'boolean':
-                        return boolval((int)filter_var($matches['boolean'], FILTER_VALIDATE_BOOLEAN));
+                        return boolval((int)filter_var((string) ($matches['boolean'] ?? 'false'), FILTER_VALIDATE_BOOLEAN));
                     case 'comparison':
                         return $this->resolveComparison($matches, $properties);
                 }
@@ -734,7 +734,7 @@ class ControlSlot extends Slot
 
                 // Find matching case or default
                 foreach ($cases as $case) {
-                    if ($case['type'] === 'case' && $this->compareSwitchValues($switchValue, $case['value'], $properties)) {
+                    if ($case['type'] === 'case' && $this->compareSwitchValues($switchValue, (string) $case['value'], $properties)) {
                         return trim((string) $case['body']);
                     }
                 }

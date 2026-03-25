@@ -45,6 +45,9 @@ class StubManager
         $this->fetchTemplates();
     }
 
+    /**
+     * @param class-string<SlotInterface> $slots
+     */
     public function addSlot(string $slots): void
     {
         $this->slots[] = $slots;

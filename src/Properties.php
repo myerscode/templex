@@ -20,9 +20,9 @@ readonly class Properties
      */
     public function resolveValue(array $matches): mixed
     {
-        $variable = $matches['variable'] ?? null;
+        $variable = $matches['variable'] ?? '';
 
-        if (!isset($this->variables[$variable])) {
+        if ($variable === '' || !isset($this->variables[$variable])) {
             throw new VariableNotFoundException($variable . ' not found');
         }
 
