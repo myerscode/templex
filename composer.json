@@ -25,13 +25,13 @@
   "require": {
     "php": "^8.5",
     "ext-mbstring": "*",
-    "myerscode/utilities-files": "^2026",
+    "myerscode/utilities-files": "^2025",
     "myerscode/utilities-strings": "^2026"
   },
   "require-dev": {
     "laravel/pint": "^1.29",
     "phpstan/phpstan": "^2.1",
-    "phpunit/phpunit": "^11.0",
+    "phpunit/phpunit": "^13.0",
     "rector/rector": "^2.3"
   },
   "autoload": {
