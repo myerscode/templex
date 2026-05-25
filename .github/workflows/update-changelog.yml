@@ -40,7 +40,7 @@ jobs:
           writeToFile: true
 
       - name: Commit updated CHANGELOG
-        uses: stefanzweifel/git-auto-commit-action@v4
+        uses: stefanzweifel/git-auto-commit-action@v7
         with:
           branch: main
           commit_message: "docs: update CHANGELOG for ${{ github.event.inputs.version }}"
