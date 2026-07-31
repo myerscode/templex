@@ -1,12 +1,13 @@
 # Templex
+
 > A lightweight, regex based template rendering engine for PHP
 
 [![Latest Stable Version](https://poser.pugx.org/myerscode/templex/v/stable)](https://packagist.org/packages/myerscode/templex)
-[![PHP Version Require](http://poser.pugx.org/myerscode/templex/require/php)](https://packagist.org/packages/myerscode/templex)
 [![Total Downloads](https://poser.pugx.org/myerscode/templex/downloads)](https://packagist.org/packages/myerscode/templex)
-[![License](https://poser.pugx.org/myerscode/templex/license)](https://packagist.org/packages/myerscode/templex)
-![Tests](https://github.com/myerscode/templex/actions/workflows/tests.yml/badge.svg?branch=main)
-[![codecov](https://codecov.io/gh/myerscode/templex/graph/badge.svg?token=YR0YHVERNV)](https://codecov.io/gh/myerscode/templex)
+[![PHP Version Require](http://poser.pugx.org/myerscode/templex/require/php)](https://packagist.org/packages/myerscode/templex)
+[![License](https://poser.pugx.org/myerscode/templex/license)](https://github.com/myerscode/templex/blob/main/LICENSE)
+[![Tests](https://github.com/myerscode/templex/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/myerscode/templex/actions/workflows/tests.yml)
+[![codecov](https://codecov.io/gh/myerscode/templex/graph/badge.svg)](https://codecov.io/gh/myerscode/templex)
 
 ## Why this package is helpful?
 
@@ -50,13 +51,13 @@ Hello <{ $name }>!
 - [For Loop Examples](docs/for-loop-examples.md)
 - [Switch Statement Examples](docs/switch-examples.md)
 
-## Issues and Contributing
-
-We are very happy to receive pull requests to add functionality or fixes.
+## Issues
 
 Bug reports and feature requests can be submitted on the [Github Issue Tracker](https://github.com/myerscode/templex/issues).
 
-Please read the Myerscode [contributing](https://github.com/myerscode/docs/blob/main/CONTRIBUTING.md) guide for information on our Code of Conduct.
+## Contributing
+
+Contributions are welcome! Please see [contributing.md](https://github.com/myerscode/docs/blob/master/contributing.md) for guidelines on how to contribute to this project.
 
 ## License
 
