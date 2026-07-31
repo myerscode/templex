@@ -18,6 +18,7 @@ final class ControlSlotTest extends TestCase
         yield 'true bool' => [false];
         yield 'true int' => [0];
     }
+
     public static function operatorProvider(): Iterator
     {
         yield '== pass' => ['==', "'a'", "'a'", 'pass'];

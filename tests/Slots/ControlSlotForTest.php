@@ -276,6 +276,7 @@ final class ControlSlotForTest extends TestCase
         $this->assertStringContainsString('2-1', $result);
         $this->assertStringContainsString('2-2', $result);
     }
+
     public function testRenderWithForLoop(): void
     {
         $data = [

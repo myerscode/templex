@@ -53,6 +53,7 @@ final class TernarySlotTest extends TestCase
 
         $this->assertSame('My Page', $result);
     }
+
     public function testNullCoalescingWithMissingVariable(): void
     {
         $raw = '<{ $title ?? "Untitled" }>';

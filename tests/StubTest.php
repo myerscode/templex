@@ -18,6 +18,7 @@ final class StubTest extends TestCase
 
         $this->assertEquals(file_get_contents($path), $stub->content());
     }
+
     public function testStubStoresProperties(): void
     {
         $path = __DIR__ . '/Resources/Templates/loop.stub';

@@ -68,6 +68,7 @@ final class ControlSlotSwitchTest extends TestCase
         $result = $this->render->compile($this->rawStub($raw), new Properties($data));
         $this->assertStringContainsString('Fiction Books', $result);
     }
+
     public function testRenderWithSwitchStatement(): void
     {
         $data = [

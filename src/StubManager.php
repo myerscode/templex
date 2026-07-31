@@ -19,6 +19,7 @@ class StubManager
      * @var array<string, StubInterface|string>
      */
     protected array $cached = [];
+
     /** @var array<int, class-string<SlotInterface>> */
     protected array $defaultSlots = [
         IncludeSlot::class,
@@ -149,7 +150,7 @@ class StubManager
 
         $extensions = array_filter($extensions, fn ($value): bool => is_string($value) && $value !== '');
 
-        $this->templateExtensions = array_unique(array_map(fn ($extension): string => new StringService($extension)->trim(",. \t\n\r\0\x0B")->value(), $extensions));
+        $this->templateExtensions = array_unique(array_map(fn (string $extension): string => new StringService($extension)->trim(",. \t\n\r\0\x0B")->value(), $extensions));
     }
 
     /**

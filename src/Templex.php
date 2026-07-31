@@ -9,6 +9,7 @@ use Myerscode\Templex\Stub\StubInterface;
 class Templex
 {
     public const PLACEHOLDER_CLOSE = '}>';
+
     public const PLACEHOLDER_OPEN = '<{';
 
     protected StubManager $stubManager;

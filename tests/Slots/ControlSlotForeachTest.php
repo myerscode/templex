@@ -165,6 +165,7 @@ final class ControlSlotForeachTest extends TestCase
 
         $this->assertStringContainsString('0-1-1-1', $result);
     }
+
     public function testForeachWithKeyValue(): void
     {
         $raw = '

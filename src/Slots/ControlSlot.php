@@ -222,7 +222,7 @@ class ControlSlot extends Slot
 
         // Process elseif branches (condition, body pairs from the split)
         while ($elseifParts !== []) {
-            $condition = (string) array_shift($elseifParts);
+            $condition = array_shift($elseifParts);
             $branchBody = (string) array_shift($elseifParts);
 
             // Check if this branch body contains an else
@@ -380,25 +380,13 @@ class ControlSlot extends Slot
         // Handle logical OR (||) — split and short-circuit on first true
         if (preg_match('/\|\|/', $condition)) {
             $parts = preg_split('/\s*\|\|\s*/', $condition) ?: [];
-            foreach ($parts as $part) {
-                if ($this->resolveCondition(trim($part), $properties)) {
-                    return true;
-                }
-            }
-
-            return false;
+            return array_any($parts, fn(string $part): bool => $this->resolveCondition(trim($part), $properties));
         }
 
         // Handle logical AND (&&) — split and short-circuit on first false
         if (preg_match('/&&/', $condition)) {
             $parts = preg_split('/\s*&&\s*/', $condition) ?: [];
-            foreach ($parts as $part) {
-                if (!$this->resolveCondition(trim($part), $properties)) {
-                    return false;
-                }
-            }
-
-            return true;
+            return array_all($parts, fn(string $part): bool => $this->resolveCondition(trim($part), $properties));
         }
 
         // Handle negation (!) — negate the inner expression
@@ -429,14 +417,14 @@ class ControlSlot extends Slot
             if (preg_match($comparisonRegex, $condition, $matches, PREG_UNMATCHED_AS_NULL)) {
                 switch ($conditionType) {
                     case 'self':
-                        $value = $properties->resolveValue(['variable' => (string) ($matches['variable'] ?? '')]);
+                        $value = $properties->resolveValue(['variable' => $matches['variable'] ?? '']);
                         if (!in_array(mb_strtolower((string) $value), ['true', 'false', '0', '1'], true) && !empty($value)) {
                             return true;
                         }
 
                         return  boolval((int)filter_var($value, FILTER_VALIDATE_BOOLEAN));
                     case 'boolean':
-                        return boolval((int)filter_var((string) ($matches['boolean'] ?? 'false'), FILTER_VALIDATE_BOOLEAN));
+                        return boolval((int)filter_var($matches['boolean'] ?? 'false', FILTER_VALIDATE_BOOLEAN));
                     case 'comparison':
                         return $this->resolveComparison($matches, $properties);
                 }

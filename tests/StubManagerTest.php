@@ -44,6 +44,7 @@ final class StubManagerTest extends TestCase
         $this->assertFalse($this->stubManager->isTemplate('does-not-exist'));
         $this->assertFalse($this->stubManager->isTemplate('partials.error'));
     }
+
     public function testLoadsTemplates(): void
     {
         $expected = [

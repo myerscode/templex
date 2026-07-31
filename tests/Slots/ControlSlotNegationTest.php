@@ -87,6 +87,7 @@ final class ControlSlotNegationTest extends TestCase
         $result = $this->render->compile($this->rawStub($raw), new Properties([]));
         $this->assertStringContainsString('fail', $result);
     }
+
     public function testNegationOfTruthyVariable(): void
     {
         $raw = '
