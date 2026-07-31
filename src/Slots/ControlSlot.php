@@ -380,13 +380,13 @@ class ControlSlot extends Slot
         // Handle logical OR (||) — split and short-circuit on first true
         if (preg_match('/\|\|/', $condition)) {
             $parts = preg_split('/\s*\|\|\s*/', $condition) ?: [];
-            return array_any($parts, fn(string $part): bool => $this->resolveCondition(trim($part), $properties));
+            return array_any($parts, fn (string $part): bool => $this->resolveCondition(trim($part), $properties));
         }
 
         // Handle logical AND (&&) — split and short-circuit on first false
         if (preg_match('/&&/', $condition)) {
             $parts = preg_split('/\s*&&\s*/', $condition) ?: [];
-            return array_all($parts, fn(string $part): bool => $this->resolveCondition(trim($part), $properties));
+            return array_all($parts, fn (string $part): bool => $this->resolveCondition(trim($part), $properties));
         }
 
         // Handle negation (!) — negate the inner expression
