@@ -6,7 +6,7 @@
 [![Total Downloads](https://poser.pugx.org/myerscode/templex/downloads)](https://packagist.org/packages/myerscode/templex)
 [![PHP Version Require](http://poser.pugx.org/myerscode/templex/require/php)](https://packagist.org/packages/myerscode/templex)
 [![License](https://poser.pugx.org/myerscode/templex/license)](https://github.com/myerscode/templex/blob/main/LICENSE)
-[![Tests](https://github.com/myerscode/templex/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/myerscode/templex/actions/workflows/tests.yml)
+[![Tests](https://github.com/myerscode/templex/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/myerscode/templex/actions/workflows/tests.yml)
 [![codecov](https://codecov.io/gh/myerscode/templex/graph/badge.svg)](https://codecov.io/gh/myerscode/templex)
 
 ## Why this package is helpful?
