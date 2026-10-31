@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Calendar Versioning](https://calver.org/).
 
+## [2026.0.1] - 2026-10-31
+### New Features
+- [`98ffdac`](https://github.com/myerscode/templex/commit/98ffdacdf0757a1fec58b5e329630bab1e80aee2) - **ci**: add shared dependabot auto-merge *(PR [#10](https://github.com/myerscode/templex/pull/10) by [@oniice](https://github.com/oniice))*
+
+
 ## [2026.0.0] - 2026-07-31
 ### New Features
 - [`9567aea`](https://github.com/myerscode/templex/commit/9567aea4ae62abe8859d8c042f869dfe17861861) - **github**: created release workflow *(commit by [@oniice](https://github.com/oniice))*
@@ -56,3 +61,4 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - [`aa1d235`](https://github.com/myerscode/templex/commit/aa1d235c5d845a6868bff4a0099f04bc8fd9e13d) feat(for): added the for control slot
 - [`76c17e2`](https://github.com/myerscode/templex/commit/76c17e2b4eccf4809378c94ad77fabd2227946ca) feat(switch): added the switch control slot
 [2026.0.0]: https://github.com/myerscode/templex/compare/2025.1.0...2026.0.0
+[2026.0.1]: https://github.com/myerscode/templex/compare/2026.0.0...2026.0.1
